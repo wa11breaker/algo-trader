@@ -1,0 +1,14 @@
+[Unit]
+Description=algo-trader public paper dashboard (read-only, no password) on port 8770
+After=network-online.target
+
+[Service]
+User=@USER@
+WorkingDirectory=@REPO@
+Environment=TZ=Asia/Kolkata
+ExecStart=@REPO@/.venv/bin/algo paper-ui -s fvg_flow --ul NIFTY --host 0.0.0.0 --port 8770 --no-browser
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target

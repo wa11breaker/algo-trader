@@ -105,6 +105,7 @@ Weekends and holidays exit by themselves. Logs go to `logs/paper-<date>.log`.
 **Other options:**
 - **Change the strategy or capital:** set `Environment=STRATEGY=...` or `CAPITAL=...` in `/etc/systemd/system/algo-paper.service`.
 - **View the dashboard:** use `ssh -L 8770:127.0.0.1:8770 user@host`, then open http://127.0.0.1:8770.
+- **Make the dashboard public (read-only, NO password):** run `bash deploy/expose-ui.sh` on the server, then allow TCP 8770 in the Oracle Cloud security list. It runs `algo paper-ui --host 0.0.0.0` as an always-on service, so it still shows the last session after hours.
 
 ### Several strategies at once
 Run one `algo paper` process per strategy, each in its own terminal. Every strategy keeps its own account in `paper/<strategy>_<UL>/`, so capital, trades, reports and dashboards stay independent:

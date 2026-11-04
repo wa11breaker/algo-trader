@@ -272,9 +272,10 @@ def paper(
     typer.echo(f"State and logs: {store.root}")
 
 
-def _dashboard(root: Path, port: int):
+def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):
     """Read-only dashboard server for one paper account: serves ui.html and root/live.json on
-    127.0.0.1, at `port` or the next free port (several paper sessions can run at once)."""
+    `host` (127.0.0.1 = this machine only; 0.0.0.0 = public, no password), at `port` or the next
+    free port (several paper sessions can run at once)."""
     from functools import partial
     from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
@@ -302,8 +303,8 @@ def _dashboard(root: Path, port: int):
 
     for p in range(port, port + 20):
         try:
-            srv = ThreadingHTTPServer(("127.0.0.1", p), partial(Handler, directory=str(root)))
-            return srv, f"http://127.0.0.1:{p}"
+            srv = ThreadingHTTPServer((host, p), partial(Handler, directory=str(root)))
+            return srv, f"http://{host}:{p}"
         except OSError:   # port taken (another paper session's dashboard): try the next one
             continue
     raise RuntimeError(f"no free port in {port}-{port + 19} for the dashboard")
@@ -314,6 +315,7 @@ def paper_ui(
     strategy: str = typer.Option(..., "--strategy", "-s"),
     ul: str = typer.Option("NIFTY", "--ul"),
     port: int = typer.Option(8770, "--port"),
+    host: str = typer.Option("127.0.0.1", "--host", help="0.0.0.0 serves it publicly (no password)"),
     no_browser: bool = typer.Option(False, help="Do not open the browser"),
 ):
     """Dashboard for a paper account without a running session (`algo paper` serves its own)."""
@@ -321,7 +323,7 @@ def paper_ui(
 
     s = get_settings()
     root = s.root / s.paper.get("state_dir", "paper") / f"{strategy}_{ul.upper()}"
-    srv, url = _dashboard(root, port)
+    srv, url = _dashboard(root, port, host)
     typer.echo(f"Dashboard for {root}: {url}  (Ctrl-C to stop)")
     if not (root / "live.json").exists():
         typer.echo("live.json not written yet: it appears after `algo paper` processes its first minute.")
