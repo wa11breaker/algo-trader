@@ -425,6 +425,8 @@ algo backtest -s vwap_sd_fade --ul NIFTY --from 2024-10-01 --to 2026-10-31 --no-
 - **Entry window:** 09:30–15:00. The strategy overrides the global `risk.no_entry_before/after` through its `risk_overrides`, raises `max_trades_per_day` to 100 (effectively no cap), and turns off the daily loss limit and the consecutive-loss stop, so it trades all day. The 50% capital kill switch and the per-trade risk caps still apply.
 - **Option:** starts at `moneyness` OTM1 and steps further OTM (up to `max_otm_steps`) while the premium is above `max_premium` (₹150). `max_premium` works for every index-plan strategy.
 - **FVG-only backtest** (Jun–Oct 2025, ₹10k): 51 trades, PF 0.68. The index result was +0.13R/trade but not significant (CI −0.26..+0.49), and the kill switch fired on 2025-07-24. The edge, if any, has to come from the order-flow filter, which can only be measured in paper trading or on recorded `data/footprint` ticks.
+- **Defaults tuned on 2026-11-04** (the one day with recorded order flow; `research/fvg/results/today-report.md`): gaps of at least 0.45 ATR, EMA-50 trend filter, target 4 × ATR, breakeven at 0.5R, delta at least 10% of the bar's volume. Replay of that day: +10.8R vs +2.4R for the original rules. On 2024-01..2025-06 history it still loses (−0.10R/trade), so treat it as an experiment. The original rules: `-p min_gap_atr=null -p trend=none -p tp_mode=r -p breakeven_at_r=1 -p min_delta_ratio=null`.
+- Changing params makes an existing paper account refuse to start until you pass `--reset`.
 
 ## Capital management (withdraw the initial stake)
 `capital:` in `config/settings.yaml`, implemented in `src/algo/core/capital.py`, applies to every backtest:

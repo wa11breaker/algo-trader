@@ -11,6 +11,8 @@ from .conftest import NIFTY, make_settings
 from .helpers import save_market, smooth_price
 
 D0, D1, EXP = date(2025, 1, 6), date(2025, 1, 7), date(2025, 1, 9)
+# the original rules (defaults before the 2026-11-04 tuning); these tests check the core mechanics
+LEGACY = {"min_gap_atr": None, "trend": "none", "tp_mode": "r", "breakeven_at_r": 1.0, "min_delta_ratio": None}
 
 # 1-min bars (o, h, l, c) from 10:00 on D1, after quiet bars at 23000
 GAP = [(23000, 23004, 22998, 23003),     # 10:00 b1
@@ -48,7 +50,7 @@ def run(tmp_path, monkeypatch, rows, last, delta=None, **params):
             return pd.DataFrame({"volume": 100.0, "buy_vol": 50.0 + delta / 2, "sell_vol": 50.0 - delta / 2,
                                  "delta": float(delta)}, index=idx)
         monkeypatch.setattr(HistoricalData, "order_flow", order_flow)
-    strat = get_strategy("fvg_flow", size_from_capital=False, **params)
+    strat = get_strategy("fvg_flow", size_from_capital=False, **{**LEGACY, **params})
     res = run_backtest(strat, NIFTY, D1, D1, make_settings(tmp_path), data=HistoricalData(store, NIFTY, D1, D1))
     return strat, res.trades_df()
 
@@ -97,7 +99,7 @@ def test_entry_window_overrides_global_risk_window(tmp_path, monkeypatch):
                       bars(D1, time(9, 15), quiet(23000, 5, 4) + rows + quiet(23040, 375 - 5 - len(rows), 16))])
     store = save_market(tmp_path, spot, EXP, pricer=smooth_price)
     s = make_settings(tmp_path, risk={"no_entry_before": "09:45", "no_entry_after": "13:30"})
-    res = run_backtest(get_strategy("fvg_flow", size_from_capital=False), NIFTY, D1, D1, s,
+    res = run_backtest(get_strategy("fvg_flow", size_from_capital=False, **LEGACY), NIFTY, D1, D1, s,
                        data=HistoricalData(store, NIFTY, D1, D1))
     t = res.trades_df()
     assert len(t) == 1 and pd.Timestamp(t.iloc[0]["entry_time"]) == pd.Timestamp("2025-01-07 14:05")
@@ -145,6 +147,12 @@ def _with_futures(tmp_path, retest_close):
 @pytest.mark.parametrize("retest_close,trades", [(23020, 1), (23008, 0)])
 def test_flow_proxy_uses_futures_close_location(tmp_path, retest_close, trades):
     store = _with_futures(tmp_path, retest_close)
-    strat = get_strategy("fvg_flow", size_from_capital=False, flow_proxy=True)
+    strat = get_strategy("fvg_flow", size_from_capital=False, flow_proxy=True, **LEGACY)
     res = run_backtest(strat, NIFTY, D1, D1, make_settings(tmp_path), data=HistoricalData(store, NIFTY, D1, D1))
     assert len(res.trades_df()) == trades and strat.skips["no_flow_data"] == 0
+
+
+def test_defaults_are_the_tuned_settings():
+    p = get_strategy("fvg_flow").p
+    assert (p["min_gap_atr"], p["trend"], p["tp_mode"], p["tp_atr"], p["breakeven_at_r"], p["min_delta_ratio"]) == \
+        (0.45, "ema", "atr", 4.0, 0.5, 0.1)

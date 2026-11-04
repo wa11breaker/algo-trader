@@ -11,7 +11,12 @@
   Plan    stop = far edge of the gap -/+ sl_buffer_pts, target = target_r x risk (on the index).
   Option  starts at `moneyness` (OTM1) and steps further OTM while the premium > max_premium.
 
-Research switches (defaults = the behaviour above; ATR = ATR14 on 1-min spot):
+Defaults were tuned on 2026-11-04 (one day with recorded order flow; see
+research/fvg/results/today-report.md): gap >= 0.45 ATR, EMA trend filter, target 4 x ATR, breakeven
+at 0.5R, delta >= 10% of volume. The original rules: min_gap_atr=None trend=none tp_mode=r
+breakeven_at_r=1 min_delta_ratio=None.
+
+Research switches (ATR = ATR14 on 1-min spot):
   min_gap_atr / disp_atr    gap >= k x ATR / impulse (middle) bar body >= k x ATR
   retest_depth              "edge" (touch the near edge) | "mid" (touch the gap's 50% level)
   trend                     "none" | "vwap" (trade on the VWAP side) | "ema" (EMA-50 slope over 5 bars)
@@ -52,7 +57,7 @@ class FvgFlow(IndexPlanMixin, Strategy):
         "min_risk_pts": None,
         "max_risk_pts": None,
         "target_r": 2.0,
-        "breakeven_at_r": 1.0,
+        "breakeven_at_r": 0.5,          # tuned 2026-11-04 (research/fvg/results/today-report.md)
         "flow_bars": 1,                # 1-min futures bars whose delta is summed (the retest bar itself)
         "min_delta": 0.0,              # in contracts
         "require_cum_delta": False,
@@ -70,20 +75,20 @@ class FvgFlow(IndexPlanMixin, Strategy):
         "lots": 1,
         "size_from_capital": True,
         # research switches (see the module docstring); defaults keep the original behaviour
-        "min_gap_atr": None,
+        "min_gap_atr": 0.45,            # tuned 2026-11-04: gaps < 0.45 ATR all lost
         "disp_atr": None,
         "retest_depth": "edge",
-        "trend": "none",
+        "trend": "ema",                 # tuned 2026-11-04
         "sl_mode": "gap",
         "sl_atr": 1.0,
-        "tp_mode": "r",
-        "tp_atr": 2.0,
+        "tp_mode": "atr",               # tuned 2026-11-04: target = tp_atr x ATR
+        "tp_atr": 4.0,
         "tp_min_r": 1.0,
         "tp_max_r": 4.0,
         "trail_atr": None,
         "trail_start_r": None,
         "flow_proxy": False,
-        "min_delta_ratio": None,
+        "min_delta_ratio": 0.1,         # tuned 2026-11-04: skip near-zero delta
         "delta_z": None,
     }
 

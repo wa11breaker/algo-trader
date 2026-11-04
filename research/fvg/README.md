@@ -28,7 +28,11 @@ definition, the order-flow confirmation and the stop/target, without overfitting
 - Baselines (val): current defaults netR -0.130 (15 trades/day); gap 6 / buffer 10 / 3R / no
   breakeven netR +0.005 (4.9/day).
 
-## Params (defaults = original behaviour)
+## Params
+Since 2026-11-04 the defaults are the tuned set (min_gap_atr 0.45, trend ema, tp_mode atr, tp_atr 4,
+breakeven_at_r 0.5, min_delta_ratio 0.1). The values below are the ORIGINAL rules; the baselines above
+were measured with them.
+
 FVG: min_gap_pts 3, min_gap_atr None, disp_atr None, retest_depth "edge"|"mid", trend "none"|"vwap"|"ema",
 max_age_min 30, entry_start "09:30", entry_end "15:00".
 Stop/target: sl_mode "gap"|"atr"|"gap_atr", sl_buffer_pts 2, sl_atr 1.0, tp_mode "r"|"atr"|"liquidity",
