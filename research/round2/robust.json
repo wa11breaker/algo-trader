@@ -1,0 +1,151 @@
+[
+ {
+  "strategy": "trend_pullback",
+  "params": {
+   "adx_min": 25.0,
+   "impulse_atr": 4.0,
+   "pb_ema": 9,
+   "target_r": null,
+   "trail_atr_mult": 2.0,
+   "trail_start_r": 1.0
+  },
+  "train_R": 0.192,
+  "train_n": 370,
+  "train_ci95": "[0.02, 0.372]",
+  "by_year": "{\"2022\": 0.197, \"2023\": 0.183, \"2024\": 0.203}",
+  "robust": {
+   "BANKNIFTY": {
+    "n": 324,
+    "R": 0.085
+   },
+   "SENSEX": {
+    "n": 365,
+    "R": 0.266
+   }
+  },
+  "survives": true
+ },
+ {
+  "strategy": "trend_pullback",
+  "params": {
+   "adx_min": 25.0,
+   "impulse_atr": 4.0,
+   "pb_ema": 9,
+   "target_r": 3.0
+  },
+  "train_R": 0.182,
+  "train_n": 374,
+  "train_ci95": "[0.011, 0.351]",
+  "by_year": "{\"2022\": 0.184, \"2023\": 0.139, \"2024\": 0.264}",
+  "robust": {
+   "BANKNIFTY": {
+    "n": 324,
+    "R": 0.05
+   },
+   "SENSEX": {
+    "n": 377,
+    "R": 0.251
+   }
+  },
+  "survives": true
+ },
+ {
+  "strategy": "pdhl_retest",
+  "params": {
+   "break_atr": 0.0,
+   "confirm_mode": "any",
+   "max_wait": 12,
+   "target_r": 3.0,
+   "touch_atr": 0.5
+  },
+  "train_R": 0.162,
+  "train_n": 131,
+  "train_ci95": "[-0.114, 0.449]",
+  "by_year": "{\"2022\": 0.017, \"2023\": 0.343, \"2024\": 0.009}",
+  "robust": {
+   "BANKNIFTY": {
+    "n": 153,
+    "R": -0.072
+   },
+   "SENSEX": {
+    "n": 154,
+    "R": -0.072
+   }
+  },
+  "survives": false
+ },
+ {
+  "strategy": "vwap_structure",
+  "params": {
+   "rejection": "none",
+   "swing_len": 2,
+   "target_r": 3.0,
+   "vwap_touch_atr": null
+  },
+  "train_R": 0.153,
+  "train_n": 585,
+  "train_ci95": "[0.023, 0.281]",
+  "by_year": "{\"2022\": 0.161, \"2023\": 0.152, \"2024\": 0.142}",
+  "robust": {
+   "BANKNIFTY": {
+    "n": 528,
+    "R": 0.035
+   },
+   "SENSEX": {
+    "n": 588,
+    "R": 0.128
+   }
+  },
+  "survives": true
+ },
+ {
+  "strategy": "orb_momentum",
+  "params": {
+   "body_atr": 1.0,
+   "range_minutes": 30,
+   "rsi_min": 65.0,
+   "stop_at": "mid",
+   "target_r": 3.0
+  },
+  "train_R": 0.236,
+  "train_n": 105,
+  "train_ci95": "[-0.02, 0.486]",
+  "by_year": "{\"2022\": 0.205, \"2023\": 0.283, \"2024\": 0.188}",
+  "robust": {
+   "BANKNIFTY": {
+    "n": 111,
+    "R": 0.044
+   },
+   "SENSEX": {
+    "n": 100,
+    "R": 0.162
+   }
+  },
+  "survives": true
+ },
+ {
+  "strategy": "orb_momentum",
+  "params": {
+   "body_atr": 1.0,
+   "range_minutes": 30,
+   "rsi_min": 65.0,
+   "stop_at": "range",
+   "target_r": 3.0
+  },
+  "train_R": 0.2,
+  "train_n": 87,
+  "train_ci95": "[-0.002, 0.408]",
+  "by_year": "{\"2022\": 0.394, \"2023\": 0.223, \"2024\": 0.012}",
+  "robust": {
+   "BANKNIFTY": {
+    "n": 96,
+    "R": 0.06
+   },
+   "SENSEX": {
+    "n": 85,
+    "R": 0.228
+   }
+  },
+  "survives": true
+ }
+]

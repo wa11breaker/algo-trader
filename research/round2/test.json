@@ -1,0 +1,402 @@
+[
+ {
+  "pick": 0,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": null, \"trail_atr_mult\": 2.0, \"trail_start_r\": 1.0}",
+  "train_R": 0.192,
+  "ul": "NIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 300,
+  "R": 0.027,
+  "ci95": [
+   -0.137,
+   0.203
+  ],
+  "t": 0.32,
+  "win": 0.377,
+  "long_R": -0.001,
+  "short_R": 0.052,
+  "by_year": "{\"2024\": -0.188, \"2025\": 0.033, \"2026\": 0.08}"
+ },
+ {
+  "pick": 0,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": null, \"trail_atr_mult\": 2.0, \"trail_start_r\": 1.0}",
+  "train_R": 0.192,
+  "ul": "NIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 299,
+  "net_pnl": -102063.81,
+  "pf": 0.67,
+  "net_per_trade": -341.35,
+  "net_ci95": [
+   -595.76,
+   -53.05
+  ],
+  "index_R": -0.031,
+  "max_dd": -109459.63,
+  "by_year": "{\"2024\": {\"trades\": 30, \"net_pnl\": -9143.11, \"pf\": 0.39}, \"2025\": {\"trades\": 155, \"net_pnl\": -66449.4, \"pf\": 0.64}, \"2026\": {\"trades\": 114, \"net_pnl\": -26471.3, \"pf\": 0.76}}"
+ },
+ {
+  "pick": 0,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": null, \"trail_atr_mult\": 2.0, \"trail_start_r\": 1.0}",
+  "train_R": 0.192,
+  "ul": "BANKNIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 288,
+  "R": -0.073,
+  "ci95": [
+   -0.242,
+   0.124
+  ],
+  "t": -0.77,
+  "win": 0.347,
+  "long_R": -0.166,
+  "short_R": 0.028,
+  "by_year": "{\"2024\": 0.326, \"2025\": -0.057, \"2026\": -0.192}"
+ },
+ {
+  "pick": 0,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": null, \"trail_atr_mult\": 2.0, \"trail_start_r\": 1.0}",
+  "train_R": 0.192,
+  "ul": "BANKNIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 277,
+  "net_pnl": -166588.06,
+  "pf": 0.52,
+  "net_per_trade": -601.4,
+  "net_ci95": [
+   -902.0,
+   -299.31
+  ],
+  "index_R": -0.107,
+  "max_dd": -177914.17,
+  "by_year": "{\"2024\": {\"trades\": 24, \"net_pnl\": 6383.91, \"pf\": 1.35}, \"2025\": {\"trades\": 130, \"net_pnl\": -74501.41, \"pf\": 0.5}, \"2026\": {\"trades\": 123, \"net_pnl\": -98470.56, \"pf\": 0.45}}"
+ },
+ {
+  "pick": 1,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": 3.0}",
+  "train_R": 0.182,
+  "ul": "NIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 298,
+  "R": 0.077,
+  "ci95": [
+   -0.098,
+   0.248
+  ],
+  "t": 0.85,
+  "win": 0.339,
+  "long_R": 0.048,
+  "short_R": 0.103,
+  "by_year": "{\"2024\": -0.021, \"2025\": 0.133, \"2026\": 0.029}"
+ },
+ {
+  "pick": 1,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": 3.0}",
+  "train_R": 0.182,
+  "ul": "NIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 299,
+  "net_pnl": -82787.11,
+  "pf": 0.76,
+  "net_per_trade": -276.88,
+  "net_ci95": [
+   -570.59,
+   7.5
+  ],
+  "index_R": 0.04,
+  "max_dd": -86835.12,
+  "by_year": "{\"2024\": {\"trades\": 28, \"net_pnl\": -7731.16, \"pf\": 0.53}, \"2025\": {\"trades\": 156, \"net_pnl\": -36413.91, \"pf\": 0.81}, \"2026\": {\"trades\": 115, \"net_pnl\": -38642.04, \"pf\": 0.71}}"
+ },
+ {
+  "pick": 1,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": 3.0}",
+  "train_R": 0.182,
+  "ul": "BANKNIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 293,
+  "R": -0.066,
+  "ci95": [
+   -0.232,
+   0.114
+  ],
+  "t": -0.77,
+  "win": 0.314,
+  "long_R": -0.152,
+  "short_R": 0.03,
+  "by_year": "{\"2024\": 0.572, \"2025\": -0.092, \"2026\": -0.212}"
+ },
+ {
+  "pick": 1,
+  "strategy": "trend_pullback",
+  "params": "{\"adx_min\": 25.0, \"impulse_atr\": 4.0, \"pb_ema\": 9, \"target_r\": 3.0}",
+  "train_R": 0.182,
+  "ul": "BANKNIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 281,
+  "net_pnl": -185323.09,
+  "pf": 0.52,
+  "net_per_trade": -659.51,
+  "net_ci95": [
+   -943.79,
+   -366.89
+  ],
+  "index_R": -0.141,
+  "max_dd": -192829.99,
+  "by_year": "{\"2024\": {\"trades\": 26, \"net_pnl\": 1510.86, \"pf\": 1.07}, \"2025\": {\"trades\": 132, \"net_pnl\": -75253.0, \"pf\": 0.54}, \"2026\": {\"trades\": 123, \"net_pnl\": -111580.95, \"pf\": 0.45}}"
+ },
+ {
+  "pick": 2,
+  "strategy": "vwap_structure",
+  "params": "{\"rejection\": \"none\", \"swing_len\": 2, \"target_r\": 3.0, \"vwap_touch_atr\": null}",
+  "train_R": 0.153,
+  "ul": "NIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 430,
+  "R": 0.086,
+  "ci95": [
+   -0.052,
+   0.232
+  ],
+  "t": 1.18,
+  "win": 0.365,
+  "long_R": 0.096,
+  "short_R": 0.077,
+  "by_year": "{\"2024\": 0.428, \"2025\": 0.053, \"2026\": 0.019}"
+ },
+ {
+  "pick": 2,
+  "strategy": "vwap_structure",
+  "params": "{\"rejection\": \"none\", \"swing_len\": 2, \"target_r\": 3.0, \"vwap_touch_atr\": null}",
+  "train_R": 0.153,
+  "ul": "NIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 437,
+  "net_pnl": -72039.58,
+  "pf": 0.84,
+  "net_per_trade": -164.85,
+  "net_ci95": [
+   -392.81,
+   53.13
+  ],
+  "index_R": 0.079,
+  "max_dd": -102866.1,
+  "by_year": "{\"2024\": {\"trades\": 54, \"net_pnl\": 5797.83, \"pf\": 1.24}, \"2025\": {\"trades\": 207, \"net_pnl\": -42636.82, \"pf\": 0.81}, \"2026\": {\"trades\": 176, \"net_pnl\": -35200.59, \"pf\": 0.82}}"
+ },
+ {
+  "pick": 2,
+  "strategy": "vwap_structure",
+  "params": "{\"rejection\": \"none\", \"swing_len\": 2, \"target_r\": 3.0, \"vwap_touch_atr\": null}",
+  "train_R": 0.153,
+  "ul": "BANKNIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 405,
+  "R": -0.076,
+  "ci95": [
+   -0.216,
+   0.063
+  ],
+  "t": -1.05,
+  "win": 0.304,
+  "long_R": -0.111,
+  "short_R": -0.044,
+  "by_year": "{\"2024\": 0.002, \"2025\": -0.138, \"2026\": -0.025}"
+ },
+ {
+  "pick": 2,
+  "strategy": "vwap_structure",
+  "params": "{\"rejection\": \"none\", \"swing_len\": 2, \"target_r\": 3.0, \"vwap_touch_atr\": null}",
+  "train_R": 0.153,
+  "ul": "BANKNIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 386,
+  "net_pnl": -219119.08,
+  "pf": 0.57,
+  "net_per_trade": -567.67,
+  "net_ci95": [
+   -817.54,
+   -318.14
+  ],
+  "index_R": -0.102,
+  "max_dd": -237982.55,
+  "by_year": "{\"2024\": {\"trades\": 28, \"net_pnl\": 9052.94, \"pf\": 1.5}, \"2025\": {\"trades\": 193, \"net_pnl\": -104954.77, \"pf\": 0.54}, \"2026\": {\"trades\": 165, \"net_pnl\": -123217.25, \"pf\": 0.54}}"
+ },
+ {
+  "pick": 3,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"mid\", \"target_r\": 3.0}",
+  "train_R": 0.236,
+  "ul": "NIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 92,
+  "R": 0.184,
+  "ci95": [
+   -0.065,
+   0.45
+  ],
+  "t": 1.44,
+  "win": 0.522,
+  "long_R": 0.279,
+  "short_R": 0.117,
+  "by_year": "{\"2024\": 0.471, \"2025\": 0.104, \"2026\": 0.166}"
+ },
+ {
+  "pick": 3,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"mid\", \"target_r\": 3.0}",
+  "train_R": 0.236,
+  "ul": "NIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 90,
+  "net_pnl": -21039.94,
+  "pf": 0.84,
+  "net_per_trade": -233.78,
+  "net_ci95": [
+   -926.24,
+   513.4
+  ],
+  "index_R": 0.234,
+  "max_dd": -50749.88,
+  "by_year": "{\"2024\": {\"trades\": 16, \"net_pnl\": 7288.87, \"pf\": 1.59}, \"2025\": {\"trades\": 51, \"net_pnl\": -33754.4, \"pf\": 0.6}, \"2026\": {\"trades\": 23, \"net_pnl\": 5425.59, \"pf\": 1.15}}"
+ },
+ {
+  "pick": 3,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"mid\", \"target_r\": 3.0}",
+  "train_R": 0.236,
+  "ul": "BANKNIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 96,
+  "R": 0.217,
+  "ci95": [
+   -0.004,
+   0.444
+  ],
+  "t": 1.82,
+  "win": 0.531,
+  "long_R": 0.119,
+  "short_R": 0.319,
+  "by_year": "{\"2024\": 0.376, \"2025\": 0.134, \"2026\": 0.288}"
+ },
+ {
+  "pick": 3,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"mid\", \"target_r\": 3.0}",
+  "train_R": 0.236,
+  "ul": "BANKNIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 87,
+  "net_pnl": -6089.06,
+  "pf": 0.95,
+  "net_per_trade": -69.99,
+  "net_ci95": [
+   -778.58,
+   756.91
+  ],
+  "index_R": 0.155,
+  "max_dd": -30656.99,
+  "by_year": "{\"2024\": {\"trades\": 10, \"net_pnl\": 160.64, \"pf\": 1.02}, \"2025\": {\"trades\": 53, \"net_pnl\": 590.0, \"pf\": 1.01}, \"2026\": {\"trades\": 24, \"net_pnl\": -6839.7, \"pf\": 0.84}}"
+ },
+ {
+  "pick": 4,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"range\", \"target_r\": 3.0}",
+  "train_R": 0.2,
+  "ul": "NIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 74,
+  "R": 0.165,
+  "ci95": [
+   -0.03,
+   0.364
+  ],
+  "t": 1.6,
+  "win": 0.581,
+  "long_R": 0.198,
+  "short_R": 0.137,
+  "by_year": "{\"2024\": 0.475, \"2025\": 0.141, \"2026\": 0.029}"
+ },
+ {
+  "pick": 4,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"range\", \"target_r\": 3.0}",
+  "train_R": 0.2,
+  "ul": "NIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 72,
+  "net_pnl": -35767.3,
+  "pf": 0.71,
+  "net_per_trade": -496.77,
+  "net_ci95": [
+   -1366.19,
+   296.41
+  ],
+  "index_R": 0.159,
+  "max_dd": -58618.89,
+  "by_year": "{\"2024\": {\"trades\": 12, \"net_pnl\": 10775.12, \"pf\": 2.08}, \"2025\": {\"trades\": 42, \"net_pnl\": -40755.87, \"pf\": 0.5}, \"2026\": {\"trades\": 18, \"net_pnl\": -5786.55, \"pf\": 0.82}}"
+ },
+ {
+  "pick": 4,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"range\", \"target_r\": 3.0}",
+  "train_R": 0.2,
+  "ul": "BANKNIFTY",
+  "mode": "index",
+  "period": "test",
+  "n": 79,
+  "R": 0.056,
+  "ci95": [
+   -0.13,
+   0.246
+  ],
+  "t": 0.59,
+  "win": 0.544,
+  "long_R": -0.067,
+  "short_R": 0.183,
+  "by_year": "{\"2024\": 0.309, \"2025\": -0.07, \"2026\": 0.152}"
+ },
+ {
+  "pick": 4,
+  "strategy": "orb_momentum",
+  "params": "{\"body_atr\": 1.0, \"range_minutes\": 30, \"rsi_min\": 65.0, \"stop_at\": \"range\", \"target_r\": 3.0}",
+  "train_R": 0.2,
+  "ul": "BANKNIFTY",
+  "mode": "options",
+  "period": "test",
+  "n": 73,
+  "net_pnl": -21393.73,
+  "pf": 0.83,
+  "net_per_trade": -293.06,
+  "net_ci95": [
+   -1216.24,
+   693.54
+  ],
+  "index_R": 0.035,
+  "max_dd": -37926.0,
+  "by_year": "{\"2024\": {\"trades\": 9, \"net_pnl\": -469.5, \"pf\": 0.94}, \"2025\": {\"trades\": 43, \"net_pnl\": -24959.81, \"pf\": 0.7}, \"2026\": {\"trades\": 21, \"net_pnl\": 4035.58, \"pf\": 1.11}}"
+ }
+]

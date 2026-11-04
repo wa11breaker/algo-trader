@@ -1,0 +1,90 @@
+data_dir: data
+reports_dir: reports
+
+underlyings:
+  NIFTY:
+    instrument_key: "NSE_INDEX|Nifty 50"
+    exchange: NSE
+    strike_step: 50
+    fyers_symbol: "NSE:NIFTY50-INDEX"
+  BANKNIFTY:
+    instrument_key: "NSE_INDEX|Nifty Bank"
+    exchange: NSE
+    strike_step: 100
+    fyers_symbol: "NSE:NIFTYBANK-INDEX"
+  SENSEX:
+    instrument_key: "BSE_INDEX|SENSEX"
+    exchange: BSE
+    strike_step: 100
+    fyers_symbol: "BSE:SENSEX-INDEX"
+
+download:
+  # Strikes fetched = ATM +/- strikes_around steps of the spot's min/max range
+  # over each contract's life.
+  strikes_around: 10
+  requests_per_second: 8
+  requests_per_minute: 400
+  requests_per_30min: 1800   # Upstox caps standard APIs at 2000 / 30 min
+
+# Indian F&O options charges (per leg). Check them against your broker's contract note.
+costs:
+  brokerage_per_order: 10.0
+  stt_sell_pct: 0.1            # % of sell-side premium
+  txn_pct:                     # exchange transaction charges, % of premium
+    NSE: 0.03503
+    BSE: 0.0325
+  sebi_per_crore: 10.0
+  stamp_buy_pct: 0.003         # % of buy-side premium
+  gst_pct: 18.0                # on brokerage + txn + sebi
+
+execution:
+  slippage_pct: 0.5            # % of price
+  slippage_min: 0.5            # rupees; slippage = max(pct * price, min)
+  square_off_time: "15:15"
+
+backtest:
+  initial_capital: 10000
+  skip_special_sessions: true   # skip muhurat / non-09:15 sessions
+
+# Account risk rules, applied to every strategy's entries (see src/algo/core/risk.py).
+# Turn off for a run with:  algo backtest ... --no-risk
+risk:
+  enabled: true
+  max_risk_per_trade_pct: 6.0      # planned max loss per trade <= 6% of capital
+  max_position_pct: 90.0           # premium paid per trade <= 90% of capital (1 NIFTY lot ~ Rs 6-12k)
+  daily_loss_limit_pct: 6.0        # no new entries after -6% on the day
+  max_consecutive_losses: 3        # stop for the day after 3 losing trades in a row
+  max_trades_per_day: 2            # a spread counts as one trade
+  no_entry_before: "09:45"
+  no_entry_after: "13:30"
+  event_days_file: config/event_days.yaml
+
+# Account capital (src/algo/core/capital.py). `capital` follows equity, so risk limits compound.
+capital:
+  withdraw_multiple: 2.0     # once equity reaches 2x the start, withdraw the initial stake (once)
+  kill_switch_pct: 50.0      # stop trading if equity < 50% of start (or of what remained after the withdrawal)
+  max_lots: 10               # cap for strategies that size lots from capital
+
+# Calendar filters: no new entries on these days. Applied even with --no-risk.
+calendar:
+  skip_weekdays: [fri]                   # e.g. [fri] or [mon, fri]; [] = trade every day
+  skip_days_before_monthly_expiry: 2     # monthly expiry day + 2 calendar days before it; null = off
+
+# Paper trading (`algo paper`): live Fyers data, simulated fills. See src/algo/live/.
+paper:
+  state_dir: paper              # state.json, trades.csv, fills.csv, events-YYYY-MM-DD.jsonl
+  fill_model: quote             # quote: buy at the ask / sell at the bid | bar_open: like the backtest
+  poll_delay_s: 2               # seconds after each minute boundary before the bar is processed
+  warmup_days: 10               # calendar days of 1-min history loaded at start
+  strikes_around: 10            # option strikes subscribed on each side of ATM
+  expiries: 1                   # how many of the nearest expiries to subscribe
+  max_symbols: 100              # Fyers websocket cap per user (Standard plan: 100)
+  # Order-flow confirmation before an entry, from the front-month future's live delta
+  # (buy volume - sell volume, classified per feed snapshot against the previous bid/ask).
+  # Bullish entries (buy CE / sell PE) need delta >= min_delta over the last `bars` 1-min bars;
+  # bearish entries need delta <= -min_delta. Blocked entries count as risk block `order_flow`.
+  order_flow_gate:
+    enabled: false
+    bars: 3
+    min_delta: 0                # in contracts (quantity), e.g. 5000
+    require_cum_delta: false    # also require today's cumulative delta on the trade's side

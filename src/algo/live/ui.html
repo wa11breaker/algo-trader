@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Paper Trading Live</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lightweight-charts@4.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<style>
+  /* shadcn/ui "zinc" tokens, as plain colours so the charts can use them too */
+  :root {
+    --background: #ffffff; --foreground: #09090b;
+    --card: #ffffff; --muted: #f4f4f5; --muted-foreground: #71717a;
+    --border: #e4e4e7; --ring: #a1a1aa; --primary: #18181b; --primary-foreground: #fafafa;
+    --up: #16a34a; --down: #dc2626; --up-soft: #dcfce7; --down-soft: #fee2e2;
+    --accent: #2563eb; --warn: #d97706; --warn-soft: #fef3c7;
+    --radius: 0.75rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --background: #09090b; --foreground: #fafafa;
+      --card: #09090b; --muted: #27272a; --muted-foreground: #a1a1aa;
+      --border: #27272a; --ring: #52525b; --primary: #fafafa; --primary-foreground: #18181b;
+      --up: #22c55e; --down: #ef4444; --up-soft: #052e16; --down-soft: #450a0a;
+      --accent: #3b82f6; --warn: #f59e0b; --warn-soft: #451a03;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--background); color: var(--foreground);
+         font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+         -webkit-font-smoothing: antialiased; }
+  main { max-width: 1280px; margin: 0 auto; padding: 24px 16px 48px; }
+
+  /* header */
+  header { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px;
+           padding-bottom: 20px; margin-bottom: 24px; border-bottom: 1px solid var(--border); }
+  .heading h1 { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; margin: 0; }
+  .heading p { margin: 2px 0 0; color: var(--muted-foreground); font-size: 14px; }
+  .meta { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; color: var(--muted-foreground); font-size: 13px; }
+
+  /* badge */
+  .badge { display: inline-flex; align-items: center; gap: 6px; border-radius: 9999px; padding: 2px 10px;
+           font-size: 12px; font-weight: 600; border: 1px solid var(--border); background: var(--muted); color: var(--foreground); }
+  .badge::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+  .badge.live { background: var(--up-soft); color: var(--up); border-color: transparent; }
+  .badge.stale, .badge.halt { background: var(--down-soft); color: var(--down); border-color: transparent; }
+  .badge.closed { color: var(--muted-foreground); }
+  .badge.outline { background: transparent; }
+  .badge.outline::before { display: none; }
+
+  /* card */
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius);
+          box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05); min-width: 0; }
+  .card-header { padding: 20px 24px 0; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .card-title { font-size: 16px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .card-desc { color: var(--muted-foreground); font-size: 13px; margin: 2px 0 0; }
+  .card-content { padding: 16px 24px 20px; }
+  .stack { display: grid; gap: 16px; margin-bottom: 16px; }
+
+  /* stat cards */
+  .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 16px; margin-bottom: 16px; }
+  .tile { padding: 16px 20px; }
+  .tile .k { color: var(--muted-foreground); font-size: 13px; font-weight: 500; }
+  .tile .v { font-size: 24px; font-weight: 700; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; margin-top: 4px; }
+  .pos { color: var(--up); } .neg { color: var(--down); }
+
+  .chart { height: 420px; }
+  .pchart { height: 240px; }
+  .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 16px; }
+  .grid2:empty { display: none; }
+
+  /* table */
+  .scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-variant-numeric: tabular-nums; font-size: 14px; }
+  th { height: 40px; padding: 0 12px; text-align: right; color: var(--muted-foreground); font-weight: 500;
+       border-bottom: 1px solid var(--border); white-space: nowrap; }
+  td { padding: 10px 12px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  tbody tr:last-child td { border-bottom: 0; }
+  tbody tr:hover { background: color-mix(in srgb, var(--muted) 50%, transparent); }
+  td.sym { font-weight: 500; }
+  .empty { color: var(--muted-foreground); padding: 24px 0; text-align: center; font-size: 14px; }
+
+  /* events */
+  ul.events { list-style: none; margin: 0; padding: 0; max-height: 340px; overflow-y: auto; }
+  ul.events li { display: grid; grid-template-columns: 48px 130px 1fr; gap: 12px; align-items: center;
+                 padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+  ul.events li:last-child { border-bottom: 0; }
+  ul.events .t { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  ul.events .e { justify-self: start; }
+  ul.events .i { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  @media (max-width: 640px) {
+    .chart { height: 300px; } .grid2 { grid-template-columns: 1fr; }
+    .card-header { padding: 16px 16px 0; } .card-content { padding: 12px 16px 16px; }
+    ul.events li { grid-template-columns: 44px 1fr; } ul.events .i { grid-column: 1 / -1; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <div class="heading">
+      <h1 id="title">Paper trading</h1>
+      <p id="subtitle">Waiting for data…</p>
+    </div>
+    <div class="meta">
+      <span id="status" class="badge">loading</span>
+      <span id="updated"></span>
+    </div>
+  </header>
+
+  <div class="tiles">
+    <div class="card tile"><div class="k">Equity</div><div class="v" id="equity">–</div></div>
+    <div class="card tile"><div class="k">Today's P&amp;L</div><div class="v" id="daypnl">–</div></div>
+    <div class="card tile"><div class="k">Realised</div><div class="v" id="realised">–</div></div>
+    <div class="card tile"><div class="k">Unrealised</div><div class="v" id="unreal">–</div></div>
+    <div class="card tile"><div class="k">Starting capital</div><div class="v" id="capital">–</div></div>
+    <div class="card tile"><div class="k">Trades / open</div><div class="v" id="counts">–</div></div>
+  </div>
+
+  <div class="stack">
+    <div class="card">
+      <div class="card-header"><div>
+        <h3 class="card-title" id="spotTitle">Spot</h3>
+        <p class="card-desc">1-minute candles · ▲▼ entries, ● exits with net P&amp;L</p>
+      </div></div>
+      <div class="card-content"><div id="spot" class="chart"></div></div>
+    </div>
+
+    <div id="posCharts" class="grid2"></div>
+
+    <div class="card">
+      <div class="card-header"><div>
+        <h3 class="card-title">Open positions</h3>
+        <p class="card-desc">Live LTP and unrealised P&amp;L</p>
+      </div></div>
+      <div class="card-content scroll" id="positions"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div>
+        <h3 class="card-title">Today's trades</h3>
+        <p class="card-desc">Closed round trips, newest first</p>
+      </div></div>
+      <div class="card-content scroll" id="trades"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div>
+        <h3 class="card-title">Activity</h3>
+        <p class="card-desc">Entries, fills, exits, blocked entries and errors</p>
+      </div></div>
+      <div class="card-content"><ul class="events" id="events"></ul></div>
+    </div>
+  </div>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const inr = v => v == null ? "–" : "₹" + Math.round(v).toLocaleString("en-IN");
+const sinr = v => v == null ? "–" : (v >= 0 ? "+" : "−") + "₹" + Math.abs(Math.round(v)).toLocaleString("en-IN");
+const num = v => v == null || v === "" ? "–" : Number(v).toFixed(2);
+const cls = v => v > 0 ? "pos" : v < 0 ? "neg" : "";
+const hhmm = s => s ? String(s).replace("T", " ").slice(11, 16) : "";
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"})[c]);
+// bullish on the index: long calls or short puts
+const bullish = (type, side) => (type === "CE") === (side === "BUY");
+
+function makeChart(el) {
+  const c = LightweightCharts.createChart(el, {
+    autoSize: true,
+    layout: { background: { color: "transparent" }, textColor: css("--muted-foreground"), fontFamily: "Inter, system-ui, sans-serif" },
+    grid: { vertLines: { visible: false }, horzLines: { color: css("--border") } },
+    rightPriceScale: { borderVisible: false },
+    timeScale: { borderVisible: false, timeVisible: true, secondsVisible: false },
+    crosshair: { mode: 0, vertLine: { color: css("--ring") }, horzLine: { color: css("--ring") } },
+  });
+  const s = c.addCandlestickSeries({
+    upColor: css("--up"), downColor: css("--down"), wickUpColor: css("--up"), wickDownColor: css("--down"), borderVisible: false,
+  });
+  return { chart: c, series: s, lines: [] };
+}
+
+const spot = makeChart($("spot"));
+let spotFitted = false;
+const posCharts = new Map();   // symbol -> {chart, series, lines, el}
+
+function table(el, cols, rows) {
+  if (!rows.length) { el.innerHTML = '<div class="empty">Nothing yet</div>'; return; }
+  el.innerHTML = "<table><thead><tr>" + cols.map(c => `<th>${c[0]}</th>`).join("") + "</tr></thead><tbody>" +
+    rows.map(r => "<tr>" + cols.map((c, i) => `<td class="${i === 0 ? "sym " : ""}${c[2] ? c[2](r) : ""}">${c[1](r)}</td>`).join("") + "</tr>").join("") +
+    "</tbody></table>";
+}
+
+function render(d) {
+  $("title").textContent = d.strategy;
+  $("subtitle").textContent = `${d.underlying} · paper trading · fills at ${d.fill_model}`;
+  $("spotTitle").textContent = `${d.underlying} spot`;
+  const ageMin = (Date.now() + 19800000 - Date.parse(d.ts + "Z")) / 60000;   // ts is IST wall-clock
+  const st = $("status");
+  if (d.halted_on) { st.className = "badge halt"; st.textContent = "Kill switch"; }
+  else if (d.day_closed) { st.className = "badge closed"; st.textContent = "Day closed"; }
+  else if (ageMin > 2) { st.className = "badge stale"; st.textContent = `Stale · ${Math.round(ageMin)} min`; }
+  else { st.className = "badge live"; st.textContent = "Live"; }
+  $("updated").textContent = `Updated ${hhmm(d.ts)} IST · ${d.feed_messages.toLocaleString()} feed msgs`;
+
+  const day = d.realised_today + d.unrealised;
+  $("equity").textContent = inr(d.equity + d.unrealised);
+  $("daypnl").textContent = sinr(day); $("daypnl").className = "v " + cls(day);
+  $("realised").textContent = sinr(d.realised_today); $("realised").className = "v " + cls(d.realised_today);
+  $("unreal").textContent = sinr(d.unrealised); $("unreal").className = "v " + cls(d.unrealised);
+  $("capital").textContent = inr(d.initial_capital) + (d.withdrawn ? ` (−${inr(d.withdrawn)})` : "");
+  $("counts").textContent = `${d.trades.length} / ${d.positions.length}`;
+
+  spot.series.setData(d.spot);
+  const marks = [];
+  for (const t of d.trades) {
+    const up = bullish(t.type, t.side);
+    marks.push({ time: t.entry_ts, position: up ? "belowBar" : "aboveBar", color: css("--accent"),
+                 shape: up ? "arrowUp" : "arrowDown", text: `${t.side} ${t.strike}${t.type}` });
+    marks.push({ time: t.exit_ts, position: "aboveBar", color: t.net_pnl >= 0 ? css("--up") : css("--down"),
+                 shape: "circle", text: sinr(t.net_pnl) });
+  }
+  for (const p of d.positions) {
+    const up = bullish(p.contract?.option_type ?? p.type, p.side);
+    marks.push({ time: p.entry_ts, position: up ? "belowBar" : "aboveBar", color: css("--warn"),
+                 shape: up ? "arrowUp" : "arrowDown", text: `OPEN ${p.symbol}` });
+  }
+  spot.series.setMarkers(marks.sort((a, b) => a.time - b.time));
+  if (!spotFitted && d.spot.length) { spot.chart.timeScale().fitContent(); spotFitted = true; }
+
+  // one premium chart per open position, with entry / SL / target lines
+  const open = new Set(d.positions.map(p => p.symbol));
+  for (const [sym, pc] of posCharts) if (!open.has(sym)) { pc.chart.remove(); pc.el.remove(); posCharts.delete(sym); }
+  for (const p of d.positions) {
+    let pc = posCharts.get(p.symbol);
+    if (!pc) {
+      const el = document.createElement("div");
+      el.className = "card";
+      el.innerHTML = `<div class="card-header"><div><h3 class="card-title"></h3><p class="card-desc"></p></div>
+                      <span class="badge outline"></span></div><div class="card-content"><div class="pchart"></div></div>`;
+      $("posCharts").appendChild(el);
+      pc = { ...makeChart(el.querySelector(".pchart")), el };
+      posCharts.set(p.symbol, pc);
+    }
+    pc.el.querySelector(".card-title").textContent = p.symbol;
+    pc.el.querySelector(".card-desc").textContent = `${p.side} ×${p.qty} @ ${num(p.entry_price)} · LTP ${num(p.ltp)}`;
+    const b = pc.el.querySelector(".badge");
+    b.textContent = sinr(p.pnl); b.className = "badge outline " + cls(p.pnl);
+    pc.series.setData(p.bars);
+    pc.lines.forEach(l => pc.series.removePriceLine(l));
+    pc.lines = [["Entry", p.entry_price, css("--accent")], ["SL", p.sl_price, css("--down")], ["Target", p.target_price, css("--up")]]
+      .filter(x => x[1] != null)
+      .map(([title, price, color]) => pc.series.createPriceLine({ price, color, title, lineWidth: 1, lineStyle: 2 }));
+  }
+
+  table($("positions"), [
+    ["Symbol", p => esc(p.symbol)], ["Side", p => p.side], ["Qty", p => p.qty], ["Entry", p => hhmm(p.entry_time)],
+    ["Entry ₹", p => num(p.entry_price)], ["LTP", p => num(p.ltp)], ["SL", p => num(p.sl_price)],
+    ["Target", p => num(p.target_price)], ["P&L", p => sinr(p.pnl), p => cls(p.pnl)],
+  ], d.positions);
+  table($("trades"), [
+    ["Symbol", t => esc(t.symbol)], ["Side", t => t.side], ["Qty", t => t.qty],
+    ["In", t => `${hhmm(t.entry_time)} @ ${num(t.entry_price)}`], ["Out", t => `${hhmm(t.exit_time)} @ ${num(t.exit_price)}`],
+    ["Reason", t => `<span class="badge outline">${esc(t.exit_reason)}</span>`], ["Net", t => sinr(t.net_pnl), t => cls(t.net_pnl)],
+  ], [...d.trades].reverse());
+
+  $("events").innerHTML = [...d.events].reverse().map(e => {
+    const { event, ts, t, ...rest } = e;
+    const info = event === "entry_blocked" ? rest.rule
+      : event === "entry" ? `${rest.side} ${rest.lots} lot(s) ${rest.contract.strike}${rest.contract.option_type} @ ${num(rest.entry_price)}`
+      : rest.symbol ? `${rest.symbol}${rest.net_pnl != null ? " " + sinr(rest.net_pnl) : ""}`
+      : event === "day_closed" ? `${rest.trades} trades, net ${sinr(rest.net)}`
+      : rest.error ?? "";
+    const tone = event === "error" || event === "entry_blocked" ? "stale" : event === "trade_closed" || event === "entry" ? "" : "outline";
+    return `<li><span class="t">${hhmm(ts ?? t)}</span><span class="e badge ${tone}">${esc(event.replace("_", " "))}</span>` +
+           `<span class="i">${esc(info)}</span></li>`;
+  }).join("") || '<li class="empty">No activity yet</li>';
+}
+
+async function poll() {
+  try {
+    const r = await fetch("live.json", { cache: "no-store" });
+    if (!r.ok) throw new Error(r.status === 404 ? "Waiting for the first minute of `algo paper`…" : `HTTP ${r.status}`);
+    render(await r.json());
+  } catch (e) {
+    $("status").className = "badge stale"; $("status").textContent = "No data";
+    $("updated").textContent = e.message;
+  }
+}
+poll();
+setInterval(poll, 5000);
+</script>
+</body>
+</html>

@@ -1,0 +1,12 @@
+.venv/
+__pycache__/
+*.pyc
+.env
+.token.json
+data/
+reports/
+*.egg-info/
+.pytest_cache/
+.DS_Store
+.fyers_token.json
+paper/

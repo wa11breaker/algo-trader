@@ -1,0 +1,14 @@
+# Days with no new entries when the risk manager is enabled.
+# Add your own (e.g. US Fed/CPI days you want to avoid). Verify dates before relying on them.
+rbi_policy:          # RBI MPC policy announcement days
+  - 2024-10-09
+  - 2024-12-06
+  - 2025-02-07
+  - 2025-04-09
+  - 2025-06-06
+  - 2025-08-06
+  - 2025-10-01
+  - 2025-12-05
+union_budget:
+  - 2025-02-01
+other: []

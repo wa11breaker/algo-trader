@@ -1,0 +1,12 @@
+params,n,wins,sum_netR,netR,pts,long,short,max_dd_R,skips
+"{""breakeven_at_r"": 0.5, ""min_gap_atr"": 0.45, ""tp_atr"": 4, ""tp_mode"": ""atr"", ""trend"": ""ema""}",7,4,10.8,1.543,122.2,2.59,8.21,1.09,"{""no_option"": 11, ""flow"": 12, ""trend"": 3}"
+"{""breakeven_at_r"": 0.5, ""min_delta_ratio"": 0.1, ""min_gap_atr"": 0.45, ""tp_atr"": 4, ""tp_mode"": ""atr"", ""trend"": ""ema""}",7,4,10.8,1.543,122.2,2.59,8.21,1.09,"{""no_option"": 11, ""flow"": 12, ""trend"": 3}"
+"{""breakeven_at_r"": 0.5, ""min_delta_ratio"": 0.1, ""min_gap_pts"": 5, ""tp_atr"": 4, ""tp_mode"": ""atr""}",8,4,9.73,1.216,94.6,2.59,7.13,1.09,"{""no_option"": 11, ""flow"": 13}"
+"{""breakeven_at_r"": 0.5, ""min_delta_ratio"": 0.1, ""tp_atr"": 4, ""tp_mode"": ""atr""}",9,4,9.49,1.055,103.7,2.59,6.9,1.11,"{""no_option"": 13, ""flow"": 19}"
+"{""breakeven_at_r"": 0.5, ""min_delta_ratio"": 0.1, ""min_gap_atr"": 0.45, ""sl_buffer_pts"": 3, ""target_r"": 4, ""trend"": ""ema""}",7,3,9.17,1.31,132.8,2.66,6.51,1.13,"{""no_option"": 11, ""flow"": 12, ""trend"": 3}"
+"{""breakeven_at_r"": 0.5, ""tp_atr"": 4, ""tp_mode"": ""atr""}",10,4,8.37,0.837,88.1,1.46,6.9,2.24,"{""no_option"": 14, ""flow"": 18}"
+"{""breakeven_at_r"": 0.5, ""min_delta_ratio"": 0.1, ""min_gap_pts"": 5, ""sl_buffer_pts"": 3, ""target_r"": 4}",8,3,8.1,1.013,104.2,2.66,5.44,1.13,"{""no_option"": 11, ""flow"": 13}"
+"{""min_gap_atr"": 0.45, ""trend"": ""ema""}",9,5,5.84,0.648,41.5,4.49,1.35,2.14,"{""no_option"": 11, ""flow"": 12, ""trend"": 3}"
+"{""min_delta_ratio"": 0.1, ""min_gap_atr"": 0.45, ""trend"": ""ema""}",9,5,5.84,0.648,41.5,4.49,1.35,2.14,"{""no_option"": 11, ""flow"": 12, ""trend"": 3}"
+"{""min_delta_ratio"": 0.1}",11,5,3.53,0.321,12.7,4.49,-0.96,2.14,"{""no_option"": 13, ""flow"": 19}"
+{},12,5,2.4,0.2,-2.9,3.36,-0.96,2.57,"{""no_option"": 14, ""flow"": 18}"

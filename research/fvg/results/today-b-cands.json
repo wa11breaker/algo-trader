@@ -1,0 +1,7 @@
+{"default": {},
+ "A_atr05_tpatr4": {"sl_mode":"atr","sl_atr":0.5,"tp_mode":"atr","tp_atr":4,"breakeven_at_r":null},
+ "A2_atr1_tpatr4": {"sl_mode":"atr","sl_atr":1.0,"tp_mode":"atr","tp_atr":4,"breakeven_at_r":null},
+ "B_gap2_tpatr4_be05": {"sl_mode":"gap","sl_buffer_pts":2,"tp_mode":"atr","tp_atr":4,"breakeven_at_r":0.5},
+ "C_gap3_r4_be05": {"sl_mode":"gap","sl_buffer_pts":3,"tp_mode":"r","target_r":4,"breakeven_at_r":0.5},
+ "D_gapatr1_liq1_4": {"sl_mode":"gap_atr","sl_atr":1.0,"tp_mode":"liquidity","tp_min_r":1,"tp_max_r":4,"breakeven_at_r":null},
+ "E_gapatr075_r3": {"sl_mode":"gap_atr","sl_atr":0.75,"tp_mode":"r","target_r":3,"breakeven_at_r":null}}

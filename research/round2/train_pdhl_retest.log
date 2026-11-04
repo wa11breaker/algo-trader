@@ -1,0 +1,70 @@
+64 configs, mode=index, train=2022-01-01:2024-09-30
+
+== train
+                                                                                                                                           params   n      R            ci95     t   win  long_R  short_R
+{"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 131  0.187  [-0.084, 0.47]  1.34 0.427   0.345    0.017
+                                                     {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.5} 131  0.178  [-0.06, 0.418]  1.46 0.427   0.246    0.102
+                                                     {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.5} 131  0.162 [-0.114, 0.449]  1.13 0.366   0.330   -0.026
+ {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0}  95  0.151  [-0.16, 0.504]  0.89 0.421   0.345   -0.055
+       {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 131  0.145 [-0.105, 0.428]  1.08 0.435   0.279   -0.003
+                                                      {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.5} 122  0.142   [-0.11, 0.39]  1.14 0.418   0.213    0.071
+ {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 123  0.141 [-0.122, 0.433]  1.00 0.423   0.310   -0.026
+{"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 105  0.131  [-0.18, 0.475]  0.81 0.400   0.255   -0.017
+                                                     {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.5} 131  0.106 [-0.096, 0.317]  1.00 0.458   0.177    0.027
+                                              {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.5} 131  0.096  [-0.18, 0.376]  0.68 0.351   0.245   -0.064
+                                                      {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.5} 122  0.094 [-0.194, 0.377]  0.65 0.352   0.263   -0.076
+                                              {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.5} 131  0.094 [-0.142, 0.323]  0.79 0.405   0.170    0.013
+                                                      {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.2} 102  0.092 [-0.171, 0.362]  0.68 0.412   0.208   -0.034
+                                                      {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.5} 122  0.085 [-0.124, 0.299]  0.78 0.451   0.167    0.002
+        {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 122  0.083   [-0.17, 0.36]  0.61 0.426   0.213   -0.047
+        {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 102  0.078 [-0.221, 0.394]  0.49 0.402   0.232   -0.089
+       {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 113  0.072   [-0.2, 0.374]  0.47 0.389   0.174   -0.052
+                                                      {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.2} 102  0.071 [-0.162, 0.315]  0.59 0.451   0.238   -0.109
+                                               {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.5} 123  0.068 [-0.175, 0.304]  0.56 0.398   0.157   -0.019
+                                                     {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.2} 113  0.065 [-0.183, 0.319]  0.51 0.398   0.130   -0.013
+{"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 116  0.060 [-0.201, 0.323]  0.45 0.388   0.010    0.114
+                                                     {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.5} 115  0.060 [-0.216, 0.367]  0.40 0.322  -0.058    0.209
+                                              {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.5} 116  0.050 [-0.241, 0.332]  0.33 0.319   0.025    0.076
+                                              {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.5} 131  0.038 [-0.171, 0.237]  0.36 0.435   0.152   -0.086
+                                               {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.5} 123  0.037 [-0.236, 0.302]  0.26 0.341   0.191   -0.114
+                                                     {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.2} 113  0.033  [-0.18, 0.263]  0.29 0.434   0.139   -0.095
+                                               {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.2}  95  0.029 [-0.262, 0.363]  0.18 0.358   0.226   -0.180
+                                              {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.5} 116  0.027  [-0.22, 0.266]  0.21 0.362  -0.059    0.119
+                                               {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.2}  95  0.026 [-0.234, 0.307]  0.19 0.400   0.176   -0.135
+                                               {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.5} 123  0.024 [-0.189, 0.229]  0.22 0.431   0.161   -0.111
+                                                     {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.5} 115  0.023 [-0.213, 0.285]  0.18 0.357  -0.118    0.200
+                                              {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.2} 105  0.017 [-0.272, 0.329]  0.11 0.352   0.142   -0.131
+                                                      {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.2} 102  0.016 [-0.281, 0.344]  0.10 0.343   0.217   -0.201
+                                                     {"break_atr": 0.0, "confirm_mode": "any", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.2} 113  0.012 [-0.257, 0.309]  0.08 0.336   0.149   -0.154
+       {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 115  0.004 [-0.224, 0.267]  0.03 0.391  -0.142    0.186
+ {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 108 -0.002  [-0.26, 0.265] -0.02 0.380  -0.073    0.066
+                                               {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.2}  78 -0.003 [-0.333, 0.335] -0.02 0.333   0.014   -0.019
+                                              {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.2} 105 -0.005 [-0.257, 0.252] -0.04 0.390   0.082   -0.108
+                                               {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.5} 108 -0.008 [-0.261, 0.244] -0.06 0.352  -0.105    0.085
+                                               {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.5} 108 -0.021 [-0.309, 0.277] -0.14 0.306  -0.066    0.023
+                                               {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.2}  95 -0.023 [-0.261, 0.226] -0.19 0.421   0.178   -0.237
+ {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0}  78 -0.025 [-0.324, 0.306] -0.15 0.385  -0.036   -0.014
+                                              {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.2}  89 -0.025 [-0.342, 0.314] -0.15 0.326  -0.073    0.029
+                                                      {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.5} 106 -0.027 [-0.323, 0.267] -0.18 0.302  -0.187    0.153
+                                                      {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.5} 106 -0.032 [-0.288, 0.226] -0.24 0.340  -0.207    0.164
+                                              {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.5} 116 -0.032  [-0.251, 0.18] -0.29 0.397  -0.111    0.053
+                                                     {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.5} 115 -0.036 [-0.242, 0.184] -0.32 0.391  -0.205    0.176
+{"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0}  89 -0.040 [-0.333, 0.276] -0.26 0.360  -0.100    0.027
+                                               {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.2}  78 -0.042 [-0.317, 0.249] -0.28 0.359  -0.051   -0.034
+                                               {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.5} 108 -0.053 [-0.275, 0.175] -0.46 0.389  -0.135    0.027
+                                              {"break_atr": 0.0, "confirm_mode": "break_high", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.2} 105 -0.058   [-0.28, 0.17] -0.51 0.410   0.075   -0.216
+                                                      {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.5} 106 -0.072  [-0.297, 0.15] -0.63 0.377  -0.270    0.150
+        {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": null, "touch_atr": 0.5, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 106 -0.080  [-0.32, 0.174] -0.64 0.377  -0.273    0.136
+                                              {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.2}  89 -0.081 [-0.347, 0.204] -0.58 0.348  -0.147   -0.008
+                                                      {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": 2.0, "touch_atr": 0.2}  84 -0.092 [-0.358, 0.187] -0.64 0.333  -0.180    0.005
+                                                      {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": 3.0, "touch_atr": 0.2}  84 -0.105 [-0.404, 0.219] -0.65 0.298  -0.216    0.016
+                                                     {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": 3.0, "touch_atr": 0.2}  96 -0.105 [-0.388, 0.214] -0.69 0.292  -0.236    0.063
+       {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0}  96 -0.107 [-0.376, 0.174] -0.75 0.344  -0.240    0.064
+                                                     {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": 2.0, "touch_atr": 0.2}  96 -0.112 [-0.367, 0.143] -0.83 0.323  -0.221    0.028
+        {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": null, "touch_atr": 0.2, "trail_atr_mult": 2.0, "trail_start_r": 1.0}  84 -0.113 [-0.376, 0.189] -0.76 0.357  -0.238    0.025
+                                                      {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.2}  84 -0.115 [-0.361, 0.133] -0.90 0.369  -0.163   -0.063
+                                               {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 6, "target_r": 1.5, "touch_atr": 0.2}  78 -0.124 [-0.368, 0.137] -0.94 0.372  -0.096   -0.151
+                                                     {"break_atr": 0.3, "confirm_mode": "any", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.2}  96 -0.147 [-0.386, 0.078] -1.24 0.354  -0.225   -0.048
+                                              {"break_atr": 0.3, "confirm_mode": "break_high", "max_wait": 12, "target_r": 1.5, "touch_atr": 0.2}  89 -0.165 [-0.398, 0.079] -1.36 0.360  -0.194   -0.132
+
+Results: /Users/akshayasok/development/projects/algo-trader/reports/sweeps/20261102-233202_pdhl_retest_NIFTY_index

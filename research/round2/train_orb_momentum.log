@@ -1,0 +1,70 @@
+64 configs, mode=index, train=2022-01-01:2024-09-30
+
+== train
+                                                                                                                                    params   n      R            ci95     t   win  long_R  short_R
+                                                {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": 3.0} 105  0.236  [-0.02, 0.486]  1.78 0.476   0.656   -0.091
+                                              {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": 3.0} 122  0.209  [0.028, 0.391]  2.20 0.549   0.452   -0.003
+                                              {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": 3.0}  87  0.200 [-0.002, 0.408]  1.94 0.586   0.482   -0.029
+                                              {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": 2.0} 122  0.193  [0.027, 0.373]  2.13 0.549   0.434   -0.019
+                                                {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": 2.0} 105  0.180  [-0.056, 0.41]  1.51 0.476   0.598   -0.146
+                                              {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": 2.0}  87  0.179 [-0.012, 0.374]  1.84 0.586   0.445   -0.037
+  {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 105  0.165 [-0.058, 0.388]  1.47 0.524   0.588   -0.166
+                                                {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": 1.5} 105  0.162  [-0.054, 0.38]  1.47 0.495   0.477   -0.083
+{"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 122  0.158  [0.001, 0.325]  1.90 0.590   0.401   -0.055
+                                                {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": 3.0} 128  0.158 [-0.089, 0.413]  1.23 0.422   0.420   -0.067
+                                                {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": 3.0} 237  0.157 [-0.016, 0.331]  1.78 0.456   0.277    0.009
+                                              {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": 1.5}  87  0.150  [-0.031, 0.33]  1.65 0.586   0.427   -0.075
+                                              {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": 1.5} 122  0.150 [-0.006, 0.319]  1.79 0.549   0.401   -0.070
+                                                {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": 3.0} 212  0.148 [-0.017, 0.324]  1.64 0.443   0.325    0.038
+                                                {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": 3.0} 268  0.143 [-0.024, 0.318]  1.62 0.418   0.230    0.039
+{"body_atr": 1.0, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0}  87  0.142 [-0.029, 0.313]  1.59 0.609   0.421   -0.084
+  {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 268  0.135   [-0.016, 0.3]  1.69 0.485   0.269   -0.022
+                                              {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": 3.0} 187  0.134  [0.007, 0.274]  1.91 0.529   0.226    0.078
+                                                {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": 1.5} 212  0.128 [-0.021, 0.275]  1.67 0.481   0.277    0.035
+  {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 237  0.128 [-0.015, 0.285]  1.64 0.511   0.255   -0.028
+  {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 128  0.128 [-0.073, 0.337]  1.22 0.508   0.437   -0.137
+                                              {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": 3.0} 248  0.126 [-0.003, 0.255]  1.84 0.496   0.225    0.055
+                                              {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": 3.0} 261  0.123 [-0.004, 0.252]  1.87 0.521   0.195    0.036
+  {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 212  0.121 [-0.027, 0.272]  1.57 0.528   0.324   -0.004
+                                              {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": 2.0} 261  0.114 [-0.011, 0.236]  1.81 0.521   0.181    0.034
+                                                {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": 2.0} 128  0.105 [-0.119, 0.336]  0.92 0.430   0.376   -0.127
+                                              {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": 2.0} 187  0.105  [-0.018, 0.23]  1.62 0.529   0.206    0.043
+                                                {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": 1.5} 128  0.102 [-0.103, 0.314]  0.99 0.469   0.305   -0.072
+{"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 261  0.100 [-0.016, 0.217]  1.68 0.556   0.181    0.003
+                                              {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": 3.0} 211  0.100 [-0.024, 0.227]  1.57 0.536   0.161    0.021
+                                              {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": 2.0} 211  0.094 [-0.024, 0.214]  1.51 0.536   0.144    0.029
+                                              {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": 2.0} 248  0.092 [-0.031, 0.212]  1.47 0.496   0.202    0.013
+                                                {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": 2.0} 268  0.090 [-0.055, 0.244]  1.16 0.429   0.182   -0.018
+                                                {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": 2.0} 212  0.090  [-0.06, 0.246]  1.10 0.443   0.278   -0.027
+{"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 187  0.089  [-0.027, 0.21]  1.46 0.551   0.219    0.008
+                                                {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": 2.0} 237  0.086 [-0.071, 0.245]  1.11 0.456   0.211   -0.068
+                                                {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "mid", "target_r": 1.5} 237  0.085  [-0.056, 0.23]  1.19 0.485   0.189   -0.042
+                                              {"body_atr": 1.0, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": 1.5} 187  0.084 [-0.031, 0.207]  1.37 0.529   0.201    0.013
+                                                {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "mid", "target_r": 1.5} 268  0.084 [-0.047, 0.227]  1.19 0.466   0.172   -0.020
+                                              {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 65.0, "stop_at": "range", "target_r": 1.5} 261  0.076 [-0.036, 0.185]  1.31 0.525   0.148   -0.009
+{"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 211  0.074 [-0.043, 0.187]  1.27 0.555   0.135   -0.005
+                                              {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 65.0, "stop_at": "range", "target_r": 1.5} 211  0.071 [-0.043, 0.185]  1.22 0.536   0.128   -0.002
+                                              {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": 3.0} 395  0.071 [-0.021, 0.166]  1.48 0.494   0.066    0.076
+  {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 258  0.067 [-0.077, 0.218]  0.90 0.492   0.250   -0.064
+                                              {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": 3.0} 461  0.063 [-0.032, 0.163]  1.25 0.464   0.068    0.059
+                                                {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": 3.0} 258  0.057 [-0.114, 0.226]  0.66 0.388   0.168   -0.023
+{"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 248  0.055 [-0.056, 0.162]  0.95 0.524   0.198   -0.049
+                                              {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": 2.0} 395  0.052  [-0.034, 0.14]  1.15 0.494   0.051    0.052
+                                              {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": 1.5} 248  0.049 [-0.063, 0.157]  0.84 0.496   0.168   -0.038
+                                                {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": 3.0} 430  0.043  [-0.08, 0.172]  0.68 0.409   0.119   -0.033
+  {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 474  0.042 [-0.068, 0.162]  0.70 0.458   0.112   -0.026
+{"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 395  0.041 [-0.044, 0.125]  0.98 0.519   0.049    0.034
+                                              {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "range", "target_r": 1.5} 395  0.035 [-0.047, 0.121]  0.82 0.496   0.041    0.029
+                                              {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": 2.0} 461  0.035  [-0.053, 0.13]  0.75 0.464   0.047    0.024
+{"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 461  0.021 [-0.061, 0.109]  0.47 0.497   0.050   -0.007
+  {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0} 430  0.020 [-0.084, 0.128]  0.36 0.481   0.108   -0.069
+                                                {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": 3.0} 474  0.016 [-0.106, 0.147]  0.25 0.369   0.068   -0.034
+                                                {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": 1.5} 430  0.015 [-0.088, 0.117]  0.29 0.449   0.060   -0.030
+                                                {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": 1.5} 258  0.006 [-0.135, 0.144]  0.09 0.430   0.113   -0.071
+                                              {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "range", "target_r": 1.5} 461  0.003  [-0.08, 0.091]  0.07 0.471   0.012   -0.006
+                                                {"body_atr": 0.5, "range_minutes": 30, "rsi_min": 55.0, "stop_at": "mid", "target_r": 2.0} 430 -0.006 [-0.121, 0.105] -0.10 0.414   0.062   -0.074
+                                                {"body_atr": 1.0, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": 2.0} 258 -0.006 [-0.155, 0.142] -0.08 0.391   0.110   -0.090
+                                                {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": 1.5} 474 -0.019  [-0.118, 0.09] -0.37 0.422   0.030   -0.067
+                                                {"body_atr": 0.5, "range_minutes": 15, "rsi_min": 55.0, "stop_at": "mid", "target_r": 2.0} 474 -0.030 [-0.137, 0.087] -0.53 0.382   0.012   -0.070
+
+Results: /Users/akshayasok/development/projects/algo-trader/reports/sweeps/20261102-235528_orb_momentum_NIFTY_index

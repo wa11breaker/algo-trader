@@ -1,0 +1,38 @@
+32 configs, mode=index, train=2022-01-01:2024-09-30
+
+== train
+                                                                                                                         params   n      R            ci95     t   win  long_R  short_R
+                                                 {"rejection": "none", "swing_len": 2, "target_r": 3.0, "vwap_touch_atr": null} 585  0.153  [0.023, 0.281]  2.29 0.369   0.194    0.104
+                                              {"rejection": "pattern", "swing_len": 3, "target_r": 3.0, "vwap_touch_atr": null} 219  0.123 [-0.076, 0.322]  1.19 0.379   0.040    0.232
+   {"rejection": "none", "swing_len": 3, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": null} 431  0.113  [-0.024, 0.26]  1.47 0.425   0.083    0.149
+   {"rejection": "none", "swing_len": 2, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": null} 595  0.100 [-0.026, 0.227]  1.53 0.415   0.164    0.024
+{"rejection": "pattern", "swing_len": 3, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": null} 221  0.100   [-0.093, 0.3]  1.00 0.439   0.049    0.167
+                                                  {"rejection": "none", "swing_len": 2, "target_r": 3.0, "vwap_touch_atr": 1.0} 365  0.097 [-0.071, 0.267]  1.15 0.334   0.073    0.127
+                                                 {"rejection": "none", "swing_len": 3, "target_r": 3.0, "vwap_touch_atr": null} 424  0.081 [-0.061, 0.228]  1.09 0.356   0.010    0.167
+                                              {"rejection": "pattern", "swing_len": 2, "target_r": 3.0, "vwap_touch_atr": null} 331  0.075 [-0.093, 0.241]  0.88 0.360  -0.002    0.181
+                                                 {"rejection": "none", "swing_len": 2, "target_r": 2.0, "vwap_touch_atr": null} 606  0.075 [-0.029, 0.184]  1.39 0.403   0.110    0.034
+    {"rejection": "none", "swing_len": 3, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": 1.0} 252  0.067 [-0.136, 0.273]  0.64 0.389   0.042    0.096
+    {"rejection": "none", "swing_len": 2, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": 1.0} 374  0.066    [-0.1, 0.25]  0.78 0.388   0.077    0.052
+{"rejection": "pattern", "swing_len": 2, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": null} 338  0.060 [-0.089, 0.211]  0.79 0.423   0.008    0.134
+                                                  {"rejection": "none", "swing_len": 3, "target_r": 3.0, "vwap_touch_atr": 1.0} 251  0.057  [-0.133, 0.23]  0.58 0.343  -0.089    0.226
+                                                 {"rejection": "none", "swing_len": 2, "target_r": 1.5, "vwap_touch_atr": null} 625  0.044 [-0.047, 0.141]  0.94 0.440   0.053    0.034
+                                               {"rejection": "pattern", "swing_len": 2, "target_r": 3.0, "vwap_touch_atr": 1.0} 202  0.035  [-0.18, 0.262]  0.31 0.312  -0.091    0.213
+ {"rejection": "pattern", "swing_len": 2, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": 1.0} 203  0.031 [-0.156, 0.235]  0.31 0.389  -0.008    0.088
+                                               {"rejection": "pattern", "swing_len": 3, "target_r": 3.0, "vwap_touch_atr": 1.0} 129  0.018 [-0.233, 0.278]  0.13 0.326  -0.223    0.286
+                                              {"rejection": "pattern", "swing_len": 3, "target_r": 2.0, "vwap_touch_atr": null} 220  0.017 [-0.154, 0.191]  0.19 0.377  -0.107    0.180
+                                                 {"rejection": "none", "swing_len": 3, "target_r": 2.0, "vwap_touch_atr": null} 433  0.014 [-0.112, 0.147]  0.22 0.372  -0.053    0.096
+                                              {"rejection": "pattern", "swing_len": 2, "target_r": 1.5, "vwap_touch_atr": null} 347  0.013  [-0.11, 0.143]  0.20 0.429  -0.070    0.128
+                                              {"rejection": "pattern", "swing_len": 2, "target_r": 2.0, "vwap_touch_atr": null} 340  0.006 [-0.136, 0.138]  0.08 0.388  -0.103    0.155
+                                                  {"rejection": "none", "swing_len": 2, "target_r": 2.0, "vwap_touch_atr": 1.0} 368  0.001 [-0.131, 0.142]  0.02 0.364  -0.037    0.047
+                                                  {"rejection": "none", "swing_len": 3, "target_r": 2.0, "vwap_touch_atr": 1.0} 251  0.001  [-0.162, 0.16]  0.01 0.367  -0.143    0.167
+                                                 {"rejection": "none", "swing_len": 3, "target_r": 1.5, "vwap_touch_atr": null} 447 -0.006 [-0.112, 0.097] -0.12 0.409  -0.059    0.057
+                                              {"rejection": "pattern", "swing_len": 3, "target_r": 1.5, "vwap_touch_atr": null} 224 -0.025 [-0.182, 0.127] -0.33 0.406  -0.128    0.111
+                                                  {"rejection": "none", "swing_len": 2, "target_r": 1.5, "vwap_touch_atr": 1.0} 374 -0.029  [-0.14, 0.089] -0.48 0.401  -0.074    0.025
+ {"rejection": "pattern", "swing_len": 3, "target_r": null, "trail_atr_mult": 2.0, "trail_start_r": 1.0, "vwap_touch_atr": 1.0} 129 -0.044  [-0.29, 0.226] -0.32 0.357  -0.143    0.068
+                                                  {"rejection": "none", "swing_len": 3, "target_r": 1.5, "vwap_touch_atr": 1.0} 256 -0.051 [-0.193, 0.082] -0.70 0.391  -0.175    0.090
+                                               {"rejection": "pattern", "swing_len": 2, "target_r": 1.5, "vwap_touch_atr": 1.0} 202 -0.065 [-0.218, 0.105] -0.79 0.381  -0.224    0.158
+                                               {"rejection": "pattern", "swing_len": 2, "target_r": 2.0, "vwap_touch_atr": 1.0} 202 -0.069 [-0.244, 0.115] -0.75 0.337  -0.229    0.157
+                                               {"rejection": "pattern", "swing_len": 3, "target_r": 2.0, "vwap_touch_atr": 1.0} 129 -0.111  [-0.32, 0.098] -0.98 0.326  -0.370    0.178
+                                               {"rejection": "pattern", "swing_len": 3, "target_r": 1.5, "vwap_touch_atr": 1.0} 131 -0.169 [-0.359, 0.028] -1.72 0.344  -0.378    0.064
+
+Results: /Users/akshayasok/development/projects/algo-trader/reports/sweeps/20261102-234635_vwap_structure_NIFTY_index

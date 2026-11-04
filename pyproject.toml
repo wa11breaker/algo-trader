@@ -1,0 +1,36 @@
+[project]
+name = "algo-trader"
+version = "0.1.0"
+description = "Index options trading bot for Indian markets (backtest -> paper -> live)"
+requires-python = ">=3.11"
+dependencies = [
+  "httpx>=0.27",
+  "pandas>=2.2",
+  "pyarrow>=15",
+  "pyyaml>=6",
+  "python-dotenv>=1",
+  "typer>=0.12",
+  "plotly>=5",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+# live data for paper trading (Fyers websocket SDK)
+live = ["fyers-apiv3>=3.2"]
+
+[project.scripts]
+algo = "algo.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+algo = ["live/ui.html"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
