@@ -21,3 +21,16 @@ Dropped versus the defaults: 10:00, 10:09 and 12:20 (small gaps / weak delta, al
 Caveats: one day only, a trending one. On 2024-01..2025-06 history the combined setting still loses
 (-0.10R/trade; -0.03R with estimated order flow). Rupee P&L is not modelled: option premium, theta
 and the Rs150 OTM rule are not in the replay.
+
+## Rupee P&L with real option prices (`research/fvg/today_pnl.py`)
+This runs the full engine on Fyers 1-min option candles (40 contracts, 09NOV26 expiry): OTM1 strike
+stepping out while above Rs150, lot sizing, slippage and charges. Fills match the live paper fills
+within about Rs1 (e.g. 10:23 23750 PE: Rs140.10 here vs Rs140.05 live).
+
+| Rules | Trades | Wins | 1 lot (65 qty) | Rs100,000 account (sized lots) |
+|---|---|---|---|---|
+| Original | 12 | 5 | -Rs3,662 | -Rs24,540 |
+| Tuned (new defaults) | 7 | 5 | **+Rs3,262** | **+Rs31,113** |
+
+Sized trades risk up to about 12.5% of the account (the 11:05 loss: -Rs12,552 on 10 lots), because
+premiums fall faster than the delta_est 0.4 sizing assumes.
