@@ -1,0 +1,14 @@
+[Unit]
+Description=algo-trader paper trading session (fvg_flow, NIFTY)
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=@USER@
+WorkingDirectory=@REPO@
+# token expiry and the paper session clock are IST
+Environment=TZ=Asia/Kolkata
+ExecStart=/bin/bash @REPO@/deploy/run-paper.sh
+# the session ends by itself after 15:30; stop it if it ever hangs
+RuntimeMaxSec=9h

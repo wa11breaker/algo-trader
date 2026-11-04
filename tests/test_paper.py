@@ -429,3 +429,10 @@ def test_dashboards_take_the_next_free_port(tmp_path):
             urllib.request.urlopen(url_a + "/state.json")
     finally:
         a.shutdown(), b.shutdown()
+
+
+def test_totp_matches_rfc6238_vector():
+    from algo.fyers.auth import totp
+    # RFC 6238 SHA-1 secret "12345678901234567890"; T=59 -> 94287082 (8 digits)
+    assert totp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", at=59, digits=8) == "94287082"
+    assert totp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", at=1111111109) == "081804"

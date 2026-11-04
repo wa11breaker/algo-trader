@@ -82,6 +82,30 @@ algo paper-ui -s orb_buy --ul NIFTY                       # dashboard without a 
   - Ctrl-C squares off intraday positions and closes the day.
   - A different strategy or parameter set needs `--reset`, which archives the old account.
 
+### Running on a server (unattended)
+A systemd timer starts `deploy/run-paper.sh` every weekday at 08:45 IST. The script:
+- pulls the latest code from GitHub;
+- logs in to Fyers headlessly (`algo fyers-login --totp`), retrying up to 5 times;
+- paper trades `fvg_flow` on NIFTY (₹100,000, default params) until 15:30, then writes the report.
+
+Weekends and holidays exit by themselves. Logs go to `logs/paper-<date>.log`.
+
+1. **Turn on TOTP in Fyers:** in the Fyers web or app, under My Account > Security, enable External 2FA TOTP. Keep the secret key shown with the QR code.
+2. **Set up the server:**
+   ```
+   git clone https://github.com/wa11breaker/algo-trader && cd algo-trader && bash deploy/setup-server.sh
+   ```
+   Then fill `.env`, which needs `FYERS_CLIENT_ID`, `FYERS_PIN` and `FYERS_TOTP_SECRET` as well as the app keys. Test the login with `TZ=Asia/Kolkata .venv/bin/algo fyers-login --totp`.
+3. **Pull results on your laptop:**
+   ```
+   SERVER=user@host SSH_KEY=~/.ssh/key bash deploy/pull.sh
+   ```
+   This copies the paper accounts, reports, footprint ticks and logs into `server-data/`.
+
+**Other options:**
+- **Change the strategy or capital:** set `Environment=STRATEGY=...` or `CAPITAL=...` in `/etc/systemd/system/algo-paper.service`.
+- **View the dashboard:** use `ssh -L 8770:127.0.0.1:8770 user@host`, then open http://127.0.0.1:8770.
+
 ### Several strategies at once
 Run one `algo paper` process per strategy, each in its own terminal. Every strategy keeps its own account in `paper/<strategy>_<UL>/`, so capital, trades, reports and dashboards stay independent:
 ```bash

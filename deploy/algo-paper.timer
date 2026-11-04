@@ -1,0 +1,10 @@
+[Unit]
+Description=Start the paper trading session every weekday morning
+
+[Timer]
+OnCalendar=Mon..Fri 08:45 Asia/Kolkata
+# if the server was down at 08:45, start on boot (the bot joins mid-session)
+Persistent=true
+
+[Install]
+WantedBy=timers.target

@@ -215,10 +215,11 @@ def backtest(
 
 
 @app.command("fyers-login")
-def fyers_login(no_browser: bool = typer.Option(False, help="Only print the login URL")):
+def fyers_login(no_browser: bool = typer.Option(False, help="Only print the login URL"),
+                totp: bool = typer.Option(False, "--totp", help="Headless: FYERS_CLIENT_ID/PIN/TOTP_SECRET from .env")):
     """Log in to Fyers (live data for paper trading). Tokens expire daily at 06:30 IST."""
-    from algo.fyers.auth import login as do_login
-    do_login(open_browser=not no_browser)
+    from algo.fyers.auth import login as do_login, totp_login
+    totp_login() if totp else do_login(open_browser=not no_browser)
     typer.echo("Logged in to Fyers. Token cached in .fyers_token.json (valid until 06:30 IST tomorrow).")
 
 
