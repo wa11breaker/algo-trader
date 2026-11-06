@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from pathlib import Path
 from datetime import date, datetime, timedelta
 
@@ -290,6 +291,9 @@ def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):
                 self.wfile.write(page.read_bytes())
             elif self.path.split("?")[0] == "/live.json":
                 self.path = "/live.json"
+                super().do_GET()
+            elif re.fullmatch(r"/whatif-\d{4}-\d{2}-\d{2}\.html", self.path.split("?")[0]):   # research/fvg/whatif.py
+                self.path = self.path.split("?")[0]
                 super().do_GET()
             else:
                 self.send_error(404)

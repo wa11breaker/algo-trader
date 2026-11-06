@@ -427,6 +427,10 @@ def test_dashboards_take_the_next_free_port(tmp_path):
         assert b"<title>" in urllib.request.urlopen(url_b + "/").read()
         with pytest.raises(urllib.error.HTTPError):
             urllib.request.urlopen(url_a + "/state.json")
+        (tmp_path / "a" / "whatif-2026-11-06.html").write_text("<p>what-if</p>")
+        assert urllib.request.urlopen(url_a + "/whatif-2026-11-06.html").read() == b"<p>what-if</p>"
+        with pytest.raises(urllib.error.HTTPError):
+            urllib.request.urlopen(url_a + "/whatif-../state.json")
     finally:
         a.shutdown(), b.shutdown()
 
