@@ -68,7 +68,7 @@ capital:
 # Calendar filters: no new entries on these days. Applied even with --no-risk.
 calendar:
   skip_weekdays: []                      # e.g. [fri] or [mon, fri]; [] = trade every day
-  skip_days_before_monthly_expiry: 2     # monthly expiry day + 2 calendar days before it; null = off
+  skip_days_before_monthly_expiry: null  # monthly expiry day + 2 calendar days before it; null = off
 
 # Paper trading (`algo paper`): live Fyers data, simulated fills. See src/algo/live/.
 paper:
