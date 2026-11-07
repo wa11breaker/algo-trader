@@ -1,0 +1,4 @@
+[{}, {"min_gap_atr":0.3},{"min_gap_atr":0.35},{"min_gap_atr":0.4},{"min_gap_atr":0.5},{"min_gap_atr":0.55},{"min_gap_atr":0.65},{"min_gap_atr":0.8},
+ {"min_gap_pts":5},{"min_gap_pts":8},{"disp_atr":0.5},{"disp_atr":1.0},{"retest_depth":"mid"},
+ {"trend":"none"},{"trend":"vwap"},{"max_age_min":15},{"max_age_min":20},{"max_age_min":45},{"max_age_min":60},
+ {"entry_start":"09:45"},{"entry_end":"14:30"},{"entry_end":"14:00"}]

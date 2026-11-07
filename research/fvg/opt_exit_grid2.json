@@ -1,0 +1,8 @@
+[{"sl_buffer_pts": 8}, {"sl_buffer_pts": 10},
+ {"sl_buffer_pts": 6, "tp_atr": 5}, {"sl_buffer_pts": 6, "tp_atr": 6},
+ {"sl_buffer_pts": 8, "tp_atr": 5}, {"sl_buffer_pts": 8, "tp_atr": 6},
+ {"sl_buffer_pts": 10, "tp_atr": 5},
+ {"sl_buffer_pts": 6, "trail_atr": 1.0, "trail_start_r": 1.0},
+ {"sl_buffer_pts": 6, "tp_atr": 5, "trail_atr": 1.5, "trail_start_r": 1.0},
+ {"sl_buffer_pts": 6, "breakeven_at_r": null},
+ {"sl_buffer_pts": 6, "breakeven_at_r": 1.0}]

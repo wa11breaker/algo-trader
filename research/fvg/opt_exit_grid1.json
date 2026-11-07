@@ -1,0 +1,9 @@
+[{"breakeven_at_r": null}, {"breakeven_at_r": 1.0}, {"breakeven_at_r": 1.5},
+ {"tp_atr": 3}, {"tp_atr": 5}, {"tp_atr": 6},
+ {"tp_mode": "r", "target_r": 2}, {"tp_mode": "r", "target_r": 3},
+ {"tp_mode": "liquidity", "tp_min_r": 1, "tp_max_r": 4},
+ {"sl_buffer_pts": 4}, {"sl_buffer_pts": 6},
+ {"sl_mode": "gap_atr", "sl_atr": 0.25}, {"sl_mode": "gap_atr", "sl_atr": 0.5},
+ {"sl_mode": "atr", "sl_atr": 1.5},
+ {"trail_atr": 1.0, "trail_start_r": 1.0}, {"trail_atr": 2.0, "trail_start_r": 1.0},
+ {"exit_time": "14:30"}]

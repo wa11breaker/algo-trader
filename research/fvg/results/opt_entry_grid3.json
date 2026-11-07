@@ -1,0 +1,3 @@
+[{}, {"min_gap_pts":6},{"min_gap_pts":7},{"min_gap_pts":8},{"min_gap_pts":10},{"min_gap_pts":12},
+ {"min_gap_pts":6,"min_gap_atr":0.3},{"min_gap_pts":8,"min_gap_atr":0.3},
+ {"min_gap_pts":6,"trend":"vwap"},{"retest_depth":"mid","min_gap_pts":6}]

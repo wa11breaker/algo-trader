@@ -1,0 +1,3 @@
+[{}, {"min_delta_ratio":null},{"min_delta_ratio":0.05},{"min_delta_ratio":0.15},{"min_delta_ratio":0.2},{"min_delta_ratio":0.3},
+ {"flow_bars":2},{"flow_bars":3},{"delta_z":0.5},{"delta_z":1.0},{"require_cum_delta":true},
+ {"flow_bars":2,"min_delta_ratio":0.05},{"min_delta_ratio":0.2,"flow_bars":2}]
