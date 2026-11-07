@@ -26,7 +26,8 @@ args=(); for s in $STRATEGIES; do args+=(-s "$s"); done
 .venv/bin/algo paper "${args[@]}" --ul NIFTY --capital "$CAPITAL"
 rc=$?
 echo "=== $(date) session ended (exit $rc)"
-if [ "$rc" -eq 0 ] && [ "$(date +%H%M)" -ge 1530 ]; then
+# reports only after a real session today (not on weekends / holidays / an early stop)
+if [ "$rc" -eq 0 ] && [ "$(date +%H%M)" -ge 1530 ] && ls paper/*/events-"$(date +%F)".jsonl >/dev/null 2>&1; then
   for s in $STRATEGIES; do .venv/bin/algo paper-report -s "$s" --ul NIFTY || true; done
   .venv/bin/python research/fvg/whatif.py "${args[@]}" || true   # paper/<s>_NIFTY/whatif-<day>.html
 fi
