@@ -144,15 +144,15 @@
     </div>
     <div class="controls">
       <label for="acctSel" class="muted">Strategy</label>
-      <select id="acctSel" aria-label="Paper account"></select>
+      <select id="acctSel" aria-label="Strategy"></select>
       <span id="status" class="badge dot">loading</span>
       <span id="updated" class="muted"></span>
     </div>
   </header>
 
-  <section class="accounts" id="accounts" aria-label="All paper accounts"></section>
+  <section class="accounts" id="accounts" aria-label="All strategies"></section>
 
-  <section class="kpis" aria-label="Selected account">
+  <section class="kpis" aria-label="Selected strategy">
     <div class="card kpi"><div class="k">Equity</div><div class="v" id="equity">–</div><div class="s" id="equitySub"></div></div>
     <div class="card kpi"><div class="k">Today's P&amp;L</div><div class="v" id="daypnl">–</div><div class="s" id="daySub"></div></div>
     <div class="card kpi"><div class="k">Trades today</div><div class="v" id="trades_n">–</div><div class="s" id="tradesSub"></div></div>
@@ -265,7 +265,7 @@ function table(el, cols, rows) {
 }
 
 function render(d) {
-  $("subtitle").textContent = `${d.underlying} · ${d.strategy} · fills at ${d.fill_model} · simulated, no real orders`;
+  $("subtitle").textContent = `${d.underlying} · ${accounts.length} ${accounts.length === 1 ? "strategy" : "strategies"} on one Fyers feed · fills at ${d.fill_model} · simulated, no real orders`;
   $("spotTitle").textContent = `${d.underlying} spot`;
   const [k, label] = statusOf(d);
   $("status").className = "badge dot " + k; $("status").textContent = label;
@@ -370,9 +370,9 @@ async function poll() {
     accounts = await (await fetch("accounts.json", { cache: "no-store" })).json();
     if (!accounts.length) {
       const sel = $("acctSel");
-      sel.innerHTML = '<option>No accounts yet</option>'; sel.disabled = true;
+      sel.innerHTML = '<option>No strategies yet</option>'; sel.disabled = true;
       $("accounts").innerHTML = "";
-      $("subtitle").textContent = "No paper accounts yet. They appear when the bot processes its first minute (weekdays from 09:15 IST).";
+      $("subtitle").textContent = "No strategy has started yet. Each strategy appears when the bot processes its first minute (weekdays from 09:15 IST). All strategies share one Fyers feed; each has its own capital.";
       throw new Error("Waiting for the first session");
     }
     $("acctSel").disabled = false;
