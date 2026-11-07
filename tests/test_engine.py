@@ -12,7 +12,7 @@ from algo.core.broker import MarketData
 from algo.core.context import Context
 from algo.core.models import OptionType
 from algo.core.strategy import Strategy
-from algo.strategies import get_strategy
+from .helpers import OrbBuy
 
 from .conftest import NIFTY
 
@@ -100,10 +100,9 @@ def test_moneyness_and_expiry_selection():
 
 
 # ---- end-to-end -------------------------------------------------------------------
-@pytest.mark.parametrize("name", ["ema_cross_buy", "orb_buy"])
-def test_strategies_end_to_end(name, synthetic, settings, tmp_path):
+def test_strategy_end_to_end(synthetic, settings, tmp_path):
     days = synthetic["days"]
-    res = run_backtest(get_strategy(name), NIFTY, days[0], days[-1], settings, data=_data(synthetic))
+    res = run_backtest(OrbBuy(), NIFTY, days[0], days[-1], settings, data=_data(synthetic))
     assert res.trades, "expected the synthetic oscillation to produce trades"
     df = res.trades_df()
     assert (pd.to_datetime(df["exit_time"]).dt.time <= time(15, 15)).all()

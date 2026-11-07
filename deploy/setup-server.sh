@@ -20,5 +20,6 @@ sed -e "s|@REPO@|$REPO|g" -e "s|@USER@|$USER|g" deploy/algo-paper.service | sudo
 sudo cp deploy/algo-paper.timer /etc/systemd/system/algo-paper.timer
 sudo systemctl daemon-reload
 sudo systemctl enable --now algo-paper.timer
+sudo systemctl enable algo-paper.service     # start at boot too (resumes a session after a reboot)
 systemctl list-timers algo-paper.timer --no-pager
 echo "Done. Test the login now:  TZ=Asia/Kolkata .venv/bin/algo fyers-login --totp"

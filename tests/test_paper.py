@@ -16,10 +16,11 @@ from algo.core.models import OptionType, Position, Side
 from algo.fyers.symbols import FnoUniverse
 from algo.live.data import LiveMarketData
 from algo.live.orderflow import BarBuilder
-from algo.live.runner import PaperRunner
+from algo.live.runner import PaperAccount, PaperRunner
 from algo.live.state import PaperState, PaperStore, position_to_dict
 from algo.strategies import get_strategy
 
+from .helpers import OrbBuy
 from .conftest import make_settings
 
 UL = Underlying("NIFTY", "NSE_INDEX|Nifty 50", "NSE", 50, fyers_symbol="NSE:NIFTY50-INDEX")
@@ -275,11 +276,11 @@ def test_context_order_flow_adds_cumulative_delta(synthetic):
 
 # ---- full paper day on a fake clock ------------------------------------------------------
 def _paper_day(live, synthetic, tmp_path, fill_model, start=at(9, 10)):
-    strat = get_strategy("orb_buy")
+    strat = OrbBuy()
     s = make_settings(synthetic["root"])
     store = PaperStore(tmp_path / "paper")
     clock = Clock(start, live["feed"])
-    PaperRunner(strat, UL, s, live["data"], live["feed"], store, fill_model=fill_model,
+    PaperRunner([PaperAccount(strat, store)], UL, s, live["data"], live["feed"], fill_model=fill_model,
                 now_fn=clock.now, sleep_fn=clock.sleep, echo=lambda *_: None).run()
     return store
 
@@ -287,7 +288,7 @@ def _paper_day(live, synthetic, tmp_path, fill_model, start=at(9, 10)):
 def test_paper_day_bar_open_matches_backtest(live, synthetic, tmp_path):
     store = _paper_day(live, synthetic, tmp_path, "bar_open")
     paper = [t.to_dict() for t in store.trades()]
-    bt = run_backtest(get_strategy("orb_buy"), UL, DAY, DAY, make_settings(synthetic["root"]),
+    bt = run_backtest(OrbBuy(), UL, DAY, DAY, make_settings(synthetic["root"]),
                       data=HistoricalData(synthetic["store"], UL, DAY, DAY))
     expected = [t.to_dict() for t in bt.trades]
     assert expected, "the synthetic day should produce trades"
@@ -324,8 +325,8 @@ def test_closed_day_is_not_rerun_and_other_strategy_needs_reset(live, synthetic,
     _paper_day(live, synthetic, tmp_path, "bar_open", start=at(11, 0))   # same day again: no-op
     assert len(store.trades()) == n
     with pytest.raises(RuntimeError, match="--reset"):
-        PaperRunner(get_strategy("orb_buy", sl_pct=10.0), UL, make_settings(synthetic["root"]), live["data"],
-                    live["feed"], store, now_fn=lambda: at(9, 0, d=date(2025, 1, 8))).run()
+        PaperRunner([PaperAccount(OrbBuy(sl_pct=10.0), store)], UL, make_settings(synthetic["root"]), live["data"],
+                    live["feed"], now_fn=lambda: at(9, 0, d=date(2025, 1, 8))).run()
 
 
 def test_restart_same_day_restores_positions_and_trades(live, synthetic, tmp_path):
@@ -333,14 +334,14 @@ def test_restart_same_day_restores_positions_and_trades(live, synthetic, tmp_pat
     c = live["uni"].contract(date(2025, 1, 9), 23000, OptionType.CE)
     pos = Position(contract=c, side=Side.BUY, lots=1, entry_price=50.0, entry_time=at(9, 40), sl_price=35.0,
                    tag="x", group="g1")
-    strat = get_strategy("orb_buy")
+    strat = OrbBuy()
     store.save(PaperState(strategy=strat.name, underlying="NIFTY", params=dict(strat.p), initial_capital=10000,
                           day=DAY.isoformat(), realised_before_day=500.0, positions=[position_to_dict(pos)]))
-    runner = PaperRunner(strat, UL, make_settings(synthetic["root"]), live["data"], live["feed"], store,
+    runner = PaperRunner([PaperAccount(strat, store)], UL, make_settings(synthetic["root"]), live["data"], live["feed"],
                          echo=lambda *_: None)
-    runner.today = DAY
-    runner.state = store.load()
-    session = runner._build_session(runner.state, DAY)
+    runner.today, acct = DAY, runner.accounts[0]
+    acct.state = store.load()
+    session = acct._build_session(acct.state, DAY)
     restored = session.broker.positions()
     assert len(restored) == 1 and restored[0].sl_price == 35.0 and restored[0].contract == c
     assert session.cm.equity == pytest.approx(10500)
@@ -351,15 +352,15 @@ def test_previous_day_crash_drops_stale_intraday_positions(live, synthetic, tmp_
     store = PaperStore(tmp_path / "paper")
     c = live["uni"].contract(date(2025, 1, 9), 23000, OptionType.CE)
     pos = Position(contract=c, side=Side.BUY, lots=1, entry_price=50.0, entry_time=at(9, 40), group="g1")
-    strat = get_strategy("orb_buy")
+    strat = OrbBuy()
     store.save(PaperState(strategy=strat.name, underlying="NIFTY", params=dict(strat.p), initial_capital=10000,
                           day=DAY.isoformat(), positions=[position_to_dict(pos)]))
-    runner = PaperRunner(strat, UL, make_settings(synthetic["root"]), live["data"], live["feed"], store,
+    runner = PaperRunner([PaperAccount(strat, store)], UL, make_settings(synthetic["root"]), live["data"], live["feed"],
                          echo=lambda *_: None)
     nxt = date(2025, 1, 8)
-    runner.today = nxt
-    runner.state = store.load()
-    session = runner._build_session(runner.state, nxt)
+    runner.today, acct = nxt, runner.accounts[0]
+    acct.state = store.load()
+    session = acct._build_session(acct.state, nxt)
     assert session.broker.positions() == []
     assert store.events_path(nxt).exists()
 
@@ -385,14 +386,14 @@ def test_tick_recorder_and_footprint(tmp_path):
 
 def test_live_json_shows_open_position_midday(live, synthetic, tmp_path, monkeypatch):
     seen = []
-    orig = PaperRunner._write_live_snapshot
+    orig = PaperAccount._write_live_snapshot
 
     def spy(self):
         orig(self)
         snap = json.loads((self.store.root / "live.json").read_text())
         if snap["positions"]:
             seen.append(snap)
-    monkeypatch.setattr(PaperRunner, "_write_live_snapshot", spy)
+    monkeypatch.setattr(PaperAccount, "_write_live_snapshot", spy)
     _paper_day(live, synthetic, tmp_path, "quote")
     assert seen, "the synthetic day should hold a position at some minute"
     p = seen[0]["positions"][0]
@@ -411,26 +412,34 @@ def test_only_one_tick_recorder_writes_per_folder(tmp_path):
     assert len(pd.read_csv(tmp_path / "2026-11-04.csv")) == 2
 
 
-def test_dashboards_take_the_next_free_port(tmp_path):
+def test_dashboard_serves_every_account_and_nothing_else(tmp_path):
     import threading
+    import urllib.error
     import urllib.request
     from algo.cli import _dashboard
-    (tmp_path / "a").mkdir(), (tmp_path / "b").mkdir()
-    (tmp_path / "a" / "live.json").write_text('{"strategy": "a"}')
-    a, url_a = _dashboard(tmp_path / "a", 18770)
-    b, url_b = _dashboard(tmp_path / "b", 18770)      # a second paper session: port taken -> next one
+    for name in ("fvg_flow_NIFTY", "fvg_supertrend_NIFTY", "fvg_flow_NIFTY-archive-20261107-1200"):
+        (tmp_path / name).mkdir()
+        (tmp_path / name / "live.json").write_text(json.dumps({"account": name.split("_NIFTY")[0], "equity": 50000,
+                                                                "positions": [], "trades": []}))
+    (tmp_path / "fvg_flow_NIFTY" / "state.json").write_text("{}")
+    (tmp_path / "fvg_flow_NIFTY" / "whatif-2026-11-06.html").write_text("<p>what-if</p>")
+    a, url_a = _dashboard(tmp_path, 18770)
+    b, url_b = _dashboard(tmp_path, 18770)      # port taken -> next one
+    get = lambda path: urllib.request.urlopen(url_a + path).read()  # noqa: E731
     try:
-        for s in (a, b):
-            threading.Thread(target=s.serve_forever, daemon=True).start()
+        for srv in (a, b):
+            threading.Thread(target=srv.serve_forever, daemon=True).start()
         assert url_a != url_b
-        assert json.loads(urllib.request.urlopen(url_a + "/live.json").read()) == {"strategy": "a"}
-        assert b"<title>" in urllib.request.urlopen(url_b + "/").read()
-        with pytest.raises(urllib.error.HTTPError):
-            urllib.request.urlopen(url_a + "/state.json")
-        (tmp_path / "a" / "whatif-2026-11-06.html").write_text("<p>what-if</p>")
-        assert urllib.request.urlopen(url_a + "/whatif-2026-11-06.html").read() == b"<p>what-if</p>"
-        with pytest.raises(urllib.error.HTTPError):
-            urllib.request.urlopen(url_a + "/whatif-../state.json")
+        accts = json.loads(get("/accounts.json"))
+        assert [x["id"] for x in accts] == ["fvg_flow_NIFTY", "fvg_supertrend_NIFTY"]   # archive hidden
+        assert json.loads(get("/live.json?account=fvg_supertrend_NIFTY"))["account"] == "fvg_supertrend"
+        assert json.loads(get("/live.json"))["account"] == "fvg_flow"                 # default: the first
+        assert get("/fvg_flow_NIFTY/whatif-2026-11-06.html") == b"<p>what-if</p>"
+        assert b"<title>" in get("/")
+        for bad in ("/live.json?account=../x", "/live.json?account=fvg_flow_NIFTY-archive-20261107-1200",
+                    "/fvg_flow_NIFTY/state.json", "/state.json", "/fvg_flow_NIFTY/whatif-../state.json"):
+            with pytest.raises(urllib.error.HTTPError):
+                get(bad)
     finally:
         a.shutdown(), b.shutdown()
 
@@ -440,3 +449,47 @@ def test_totp_matches_rfc6238_vector():
     # RFC 6238 SHA-1 secret "12345678901234567890"; T=59 -> 94287082 (8 digits)
     assert totp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", at=59, digits=8) == "94287082"
     assert totp("GEZDGNBVGY3TQOJQGEZDGNBVGY3TQOJQ", at=1111111109) == "081804"
+
+
+def test_stop_mid_session_leaves_the_day_open_and_restart_resumes(live, synthetic, tmp_path):
+    import pickle
+    uninterrupted = [t.to_dict() for t in _paper_day(live, synthetic, tmp_path / "a", "bar_open").trades()]
+    store = PaperStore(tmp_path / "b" / "paper")
+    clock = Clock(at(9, 10), live["feed"])
+
+    def sleep(seconds):                      # systemd restart / Ctrl-C at 11:00
+        clock.sleep(seconds)
+        if clock.now() >= at(11, 0):
+            raise KeyboardInterrupt
+    run = lambda sleep_fn: PaperRunner([PaperAccount(OrbBuy(), store)], UL, make_settings(synthetic["root"]),  # noqa: E731
+                                       live["data"], live["feed"], fill_model="bar_open",
+                                       now_fn=clock.now, sleep_fn=sleep_fn, echo=lambda *_: None).run()
+    run(sleep)
+    st = store.load()
+    assert st.day == DAY.isoformat() and not st.day_closed
+    saved = pickle.loads((store.root / f"ctx-{DAY}.pkl").read_bytes())
+    assert saved["range"] is not None                      # the strategy's opening range survives
+    run(clock.sleep)                         # restarted at 11:00: trades on to the close
+    assert store.load().day_closed
+    resumed = [t.to_dict() for t in store.trades()]
+    for d in uninterrupted + resumed:
+        d.pop("group")
+    assert resumed == uninterrupted          # same trades as a day without the restart
+
+
+def test_two_accounts_share_one_feed_and_keep_separate_books(live, synthetic, tmp_path):
+    root = tmp_path / "paper"
+    a, b = PaperStore(root / "a_NIFTY"), PaperStore(root / "b_NIFTY")
+    clock = Clock(at(9, 10), live["feed"])
+    PaperRunner([PaperAccount(OrbBuy(), a, capital=50_000, name="a"),
+                 PaperAccount(OrbBuy(sl_pct=10.0), b, capital=80_000, name="b")],
+                UL, make_settings(synthetic["root"]), live["data"], live["feed"], fill_model="bar_open",
+                now_fn=clock.now, sleep_fn=clock.sleep, echo=lambda *_: None).run()
+    single = _paper_day(live, synthetic, tmp_path / "single", "bar_open").trades()
+    assert [t.entry_time for t in a.trades()] == [t.entry_time for t in single]
+    assert a.load().initial_capital == 50_000 and b.load().initial_capital == 80_000
+    assert a.load().day_closed and b.load().day_closed
+    assert json.loads((a.root / "live.json").read_text())["account"] == "a"
+    with pytest.raises(ValueError, match="duplicate"):
+        PaperRunner([PaperAccount(OrbBuy(), a), PaperAccount(OrbBuy(), b)], UL, make_settings(synthetic["root"]),
+                    live["data"], live["feed"])

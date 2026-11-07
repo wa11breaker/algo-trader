@@ -226,16 +226,19 @@ def fyers_login(no_browser: bool = typer.Option(False, help="Only print the logi
 
 @app.command()
 def paper(
-    strategy: str = typer.Option(..., "--strategy", "-s"),
+    strategy: list[str] = typer.Option(..., "--strategy", "-s",
+                                       help="Strategy to paper trade; repeat for several independent accounts"),
     ul: str = typer.Option("NIFTY", "--ul"),
-    param: list[str] = typer.Option([], "--param", "-p", help="Strategy parameter, e.g. -p mode=directional"),
-    capital: float = typer.Option(None, help="Starting capital of a NEW paper account (default: backtest.initial_capital)"),
+    param: list[str] = typer.Option([], "--param", "-p", help="Strategy parameter (one strategy only), e.g. -p st_tf=5min"),
+    capital: float = typer.Option(None, help="Starting capital of each NEW paper account (default: backtest.initial_capital)"),
     fill_model: str = typer.Option(None, "--fill-model", help="quote (bid/ask) | bar_open (backtest model)"),
-    reset: bool = typer.Option(False, "--reset", help="Archive the existing paper account and start fresh"),
+    reset: bool = typer.Option(False, "--reset", help="Archive the existing paper account(s) and start fresh"),
     ui_port: int = typer.Option(8770, "--ui-port", help="Dashboard port (the next free one if taken)"),
     verbose: bool = typer.Option(False, "-v"),
 ):
-    """Paper trade a strategy on live Fyers data (simulated fills, no real orders)."""
+    """Paper trade one or more strategies on live Fyers data (simulated fills, no real orders).
+
+    Each strategy is its own account (paper/<strategy>_<UL>/: capital, trades, state) on one shared feed."""
     _setup_logging(verbose)
     from algo.fyers.auth import get_token
     from algo.fyers.client import FyersClient
@@ -243,72 +246,103 @@ def paper(
     from algo.live.data import LiveMarketData
     from algo.live.feed import FyersFeed
     from algo.live.orderflow import BarBuilder, TickRecorder
-    from algo.live.runner import PaperRunner, ist_now
+    from algo.live.runner import PaperAccount, PaperRunner, ist_now
     from algo.live.state import PaperStore
     from algo.strategies import get_strategy
 
+    if param and len(strategy) > 1:
+        raise typer.BadParameter("-p only works with a single -s (give each variant its own strategy name)")
     s = get_settings()
     cfg = s.paper
     u = s.underlying(ul)
-    strat = get_strategy(strategy, **_parse_params(param))
+    paper_root = s.root / cfg.get("state_dir", "paper")
+    accounts = [PaperAccount(get_strategy(name, **_parse_params(param)), PaperStore(paper_root / f"{name}_{u.name}"),
+                             capital=capital, reset=reset) for name in strategy]
     app_id, token = get_token()
     client = FyersClient(app_id, token)
     prof = client.profile()
     typer.echo(f"Fyers: logged in as {prof.get('name') or prof.get('fy_id') or '?'}")
-    store = PaperStore(s.root / cfg.get("state_dir", "paper") / f"{strat.name}_{u.name}")
     master = FyersClient.symbol_master(u.fyers_fo_master, s.data_dir / "fyers", ist_now().date())
     builder = BarBuilder()
-    feed = FyersFeed(client.socket_token, builder, log_path=str(store.root), max_symbols=int(cfg.get("max_symbols", 100)))
+    paper_root.mkdir(parents=True, exist_ok=True)
+    feed = FyersFeed(client.socket_token, builder, log_path=str(paper_root), max_symbols=int(cfg.get("max_symbols", 100)))
     data = LiveMarketData(client, FnoUniverse(master, u), u, builder, feed=feed,
                           warmup_days=int(cfg.get("warmup_days", 10)))
     # record the front-month future's ticks for footprint backtests (data/footprint/<UL>/<day>.csv)
     builder.recorder = TickRecorder(s.data_dir / "footprint" / u.name, want=lambda sym: sym == data.fut_sym)
-    store.root.mkdir(parents=True, exist_ok=True)
     import threading
-    srv, url = _dashboard(store.root, ui_port)
+    srv, url = _dashboard(paper_root, ui_port)
     threading.Thread(target=srv.serve_forever, daemon=True).start()
     typer.echo(f"Dashboard: {url}")
-    PaperRunner(strat, u, s, data, feed, store, capital=capital, fill_model=fill_model, reset=reset,
-                echo=typer.echo).run()
-    typer.echo(f"State and logs: {store.root}")
+    PaperRunner(accounts, u, s, data, feed, fill_model=fill_model, echo=typer.echo).run()
+    typer.echo(f"State and logs: {paper_root}")
+
+
+ACCOUNT_RE = re.compile(r"[A-Za-z0-9_]+")
+
+
+def _accounts(root: Path) -> list[Path]:
+    """Paper account folders under root that have a dashboard snapshot (archived ones excluded)."""
+    if not root.is_dir():
+        return []
+    return sorted(d for d in root.iterdir()
+                  if d.is_dir() and ACCOUNT_RE.fullmatch(d.name) and (d / "live.json").exists())
+
+
+def _account_summary(d: Path) -> dict:
+    try:
+        j = json.loads((d / "live.json").read_text())
+    except (OSError, ValueError):
+        return {"id": d.name, "name": d.name}
+    return {"id": d.name, "name": j.get("account") or j.get("strategy") or d.name, "strategy": j.get("strategy"),
+            "underlying": j.get("underlying"), "equity": j.get("equity"), "unrealised": j.get("unrealised"),
+            "realised_today": j.get("realised_today"), "initial_capital": j.get("initial_capital"),
+            "open": len(j.get("positions") or []), "trades": len(j.get("trades") or []),
+            "day_closed": j.get("day_closed"), "halted_on": j.get("halted_on"), "ts": j.get("ts")}
 
 
 def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):
-    """Read-only dashboard server for one paper account: serves ui.html and root/live.json on
-    `host` (127.0.0.1 = this machine only; 0.0.0.0 = public, no password), at `port` or the next
-    free port (several paper sessions can run at once)."""
-    from functools import partial
-    from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+    """Read-only dashboard for every paper account under `root` (paper/): serves ui.html,
+    /accounts.json, /live.json?account=<folder> and /<folder>/whatif-<day>.html, on `host`
+    (127.0.0.1 = this machine only; 0.0.0.0 = public, no password) at `port` or the next free port."""
+    from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+    from urllib.parse import parse_qs, urlsplit
 
     page = Path(__file__).parent / "live" / "ui.html"
 
-    class Handler(SimpleHTTPRequestHandler):
-        def do_GET(self):
-            if self.path.split("?")[0] in ("/", "/index.html"):
-                self.send_response(200)
-                self.send_header("Content-Type", "text/html; charset=utf-8")
-                self.end_headers()
-                self.wfile.write(page.read_bytes())
-            elif self.path.split("?")[0] == "/live.json":
-                self.path = "/live.json"
-                super().do_GET()
-            elif re.fullmatch(r"/whatif-\d{4}-\d{2}-\d{2}\.html", self.path.split("?")[0]):   # research/fvg/whatif.py
-                self.path = self.path.split("?")[0]
-                super().do_GET()
-            else:
-                self.send_error(404)
-
-        def end_headers(self):
+    class Handler(BaseHTTPRequestHandler):
+        def _send(self, body: bytes, ctype: str) -> None:
+            self.send_response(200)
+            self.send_header("Content-Type", ctype)
             self.send_header("Cache-Control", "no-store")
-            super().end_headers()
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def do_GET(self):
+            u = urlsplit(self.path)
+            accts = {d.name: d for d in _accounts(root)}
+            if u.path in ("/", "/index.html"):
+                return self._send(page.read_bytes(), "text/html; charset=utf-8")
+            if u.path == "/accounts.json":
+                return self._send(json.dumps([_account_summary(d) for d in accts.values()], default=str).encode(),
+                                  "application/json")
+            if u.path == "/live.json":
+                want = (parse_qs(u.query).get("account") or [None])[0]
+                d = accts.get(want) if want else next(iter(accts.values()), None)
+                if d is not None:
+                    return self._send((d / "live.json").read_bytes(), "application/json")
+            m = re.fullmatch(r"/([A-Za-z0-9_]+)/(whatif-\d{4}-\d{2}-\d{2}\.html)", u.path)   # research/fvg/whatif.py
+            if m and m.group(1) in accts and (accts[m.group(1)] / m.group(2)).is_file():
+                return self._send((accts[m.group(1)] / m.group(2)).read_bytes(), "text/html; charset=utf-8")
+            self.send_error(404)
 
         def log_message(self, *args):
             pass
 
     for p in range(port, port + 20):
         try:
-            srv = ThreadingHTTPServer((host, p), partial(Handler, directory=str(root)))
-            return srv, f"http://{host}:{p}"
+            return ThreadingHTTPServer((host, p), Handler), f"http://{host}:{p}"
         except OSError:   # port taken (another paper session's dashboard): try the next one
             continue
     raise RuntimeError(f"no free port in {port}-{port + 19} for the dashboard")
@@ -316,21 +350,19 @@ def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):
 
 @app.command("paper-ui")
 def paper_ui(
-    strategy: str = typer.Option(..., "--strategy", "-s"),
-    ul: str = typer.Option("NIFTY", "--ul"),
     port: int = typer.Option(8770, "--port"),
     host: str = typer.Option("127.0.0.1", "--host", help="0.0.0.0 serves it publicly (no password)"),
     no_browser: bool = typer.Option(False, help="Do not open the browser"),
 ):
-    """Dashboard for a paper account without a running session (`algo paper` serves its own)."""
+    """Dashboard for all paper accounts without a running session (`algo paper` serves its own)."""
     import webbrowser
 
     s = get_settings()
-    root = s.root / s.paper.get("state_dir", "paper") / f"{strategy}_{ul.upper()}"
+    root = s.root / s.paper.get("state_dir", "paper")
     srv, url = _dashboard(root, port, host)
     typer.echo(f"Dashboard for {root}: {url}  (Ctrl-C to stop)")
-    if not (root / "live.json").exists():
-        typer.echo("live.json not written yet: it appears after `algo paper` processes its first minute.")
+    if not _accounts(root):
+        typer.echo("No live.json yet: accounts appear after `algo paper` processes its first minute.")
     if not no_browser:
         webbrowser.open(url)
     try:

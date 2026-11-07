@@ -56,14 +56,23 @@ class IndexPlanMixin:
         if p.get("max_premium") and ltp > p["max_premium"]:
             self.skips["too_expensive"] += 1
             return False
-        per_lot_risk = min(risk * p["delta_est"], ltp * p["option_sl_pct"] / 100) * opt.lot_size
+        if p.get("min_premium") and ltp < p["min_premium"]:
+            self.skips["too_cheap"] += 1           # fixed slippage + costs overshoot the plan on cheap options
+            return False
+        sl_pct = p["option_sl_pct"]
+        if p.get("sl_k"):                         # option safety stop matched to the planned loss
+            sl_pct = max(p.get("min_sl_pct", 5.0), min(sl_pct, 100 * p["sl_k"] * risk * p["delta_est"] / ltp))
+            unit = ltp * sl_pct / 100
+        else:
+            unit = min(risk * p["delta_est"], ltp * sl_pct / 100)
+        per_lot_risk = unit * (1 + p.get("loss_buf", 0.0)) * opt.lot_size
         lots = p["lots"]
         if p["size_from_capital"] and ctx.capital is not None:
             lots = ctx.capital.lots_for(per_lot_risk, ltp * opt.lot_size)
             if lots == 0:
                 self.skips["too_small_to_size"] += 1
                 return False
-        order = ctx.buy(opt, lots=lots, sl_pct=p["option_sl_pct"], target_pct=None, tag=tag,
+        order = ctx.buy(opt, lots=lots, sl_pct=sl_pct, target_pct=None, tag=tag,
                         max_loss=per_lot_risk * lots)
         if order is None:
             self.skips["risk_manager"] += 1

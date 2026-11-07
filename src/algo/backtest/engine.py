@@ -98,6 +98,7 @@ class TradingSession:
         self.last_ts: datetime | None = None
         self.squared = False
         self.started = False
+        self.resume_state: dict | None = None
 
     def sync_capital(self) -> None:
         """Push the capital manager's equity / kill switch into the risk manager."""
@@ -139,6 +140,9 @@ class TradingSession:
             self.days.append(d)
             ctx.now, ctx.state = ts, {}
             self.strategy.on_day_start(ctx)
+            if self.resume_state is not None:   # paper restart: the strategy's memory from earlier today
+                ctx.state.update(self.resume_state)
+                self.resume_state = None
         ctx.now = ts
         if not self.squared and ts.time() >= self.sq:
             b.square_off(ts, only=None if self.strategy.intraday else self._expiring(d))

@@ -155,4 +155,28 @@ def test_flow_proxy_uses_futures_close_location(tmp_path, retest_close, trades):
 def test_defaults_are_the_tuned_settings():
     p = get_strategy("fvg_flow").p
     assert (p["min_gap_atr"], p["trend"], p["tp_mode"], p["tp_atr"], p["breakeven_at_r"], p["min_delta_ratio"]) == \
-        (0.45, "ema", "atr", 4.0, 0.5, 0.1)
+        (0.40, "ema", "atr", 4.0, 0.5, 0.05)
+    assert (p["delta_est"], p["sl_k"], p["loss_buf"], p["min_premium"]) == (0.6, 1.5, 0.10, 20.0)
+
+
+def test_option_stop_matched_to_planned_loss(tmp_path, monkeypatch):
+    from algo.core.context import Context
+    seen, buy = {}, Context.buy
+
+    def spy(self, contract, lots=1, sl_pct=None, target_pct=None, tag="", max_loss=None):
+        seen.update(ltp=self.ltp(contract), lot=contract.lot_size, lots=lots, sl_pct=sl_pct, max_loss=max_loss)
+        return buy(self, contract, lots=lots, sl_pct=sl_pct, target_pct=target_pct, tag=tag, max_loss=max_loss)
+    monkeypatch.setattr(Context, "buy", spy)
+    run(tmp_path, monkeypatch, GAP + NO_TOUCH + RETEST + RALLY, 23040, delta=500,
+        delta_est=0.6, sl_k=1.5, loss_buf=0.1, min_premium=20.0)
+    # index risk 23014 - 23002 = 12 -> option stop at 1.5 x 12 x 0.6 = 10.8 rupees below the premium
+    assert seen["sl_pct"] == pytest.approx(100 * 10.8 / seen["ltp"])
+    assert seen["max_loss"] == pytest.approx(10.8 * 1.1 * seen["lot"] * seen["lots"])
+
+
+@pytest.mark.parametrize("st_dir, trades", [(1, 1), (-1, 0)])
+def test_supertrend_filter_needs_the_higher_timeframe_to_agree(tmp_path, monkeypatch, st_dir, trades):
+    import algo.strategies.fvg_flow as ff
+    monkeypatch.setattr(ff, "supertrend", lambda df, period, mult: pd.DataFrame({"st_dir": st_dir}, index=df.index))
+    strat, t = run(tmp_path, monkeypatch, GAP + NO_TOUCH + RETEST + RALLY, 23040, delta=500, st_tf="5min")
+    assert len(t) == trades and strat.skips["supertrend"] == 1 - trades

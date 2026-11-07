@@ -4,7 +4,6 @@ import pandas as pd
 
 from algo.backtest.data import HistoricalData
 from algo.backtest.engine import run_backtest
-from algo.strategies import get_strategy
 
 from .conftest import NIFTY
 
@@ -39,14 +38,6 @@ def test_futures_bars_respect_clock(synthetic):
     b5 = data.futures_bars(at, "5min")
     assert b5.index[-1] == pd.Timestamp(datetime(2025, 1, 7, 9, 15))
     assert b5["volume"].iloc[-1] == data.fut_1m.loc["2025-01-07 09:15":"2025-01-07 09:19", "volume"].sum()
-
-
-def test_vwap_volume_strategy_runs(synthetic, settings):
-    d = synthetic["days"]
-    res = run_backtest(get_strategy("vwap_volume_buy"), NIFTY, d[0], d[-1], settings, data=_data(synthetic))
-    assert res.trades
-    df = res.trades_df()
-    assert (pd.to_datetime(df["exit_time"]).dt.time <= time(15, 15)).all()
 
 
 def test_continuous_futures_falls_back_to_next_contract_on_a_gap(tmp_path):

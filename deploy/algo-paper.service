@@ -1,7 +1,10 @@
 [Unit]
-Description=algo-trader paper trading session (fvg_flow, NIFTY)
+Description=algo-trader paper trading session (all paper strategies, NIFTY)
 Wants=network-online.target
 After=network-online.target
+# a bot that keeps failing (e.g. needs --reset) must not log in to Fyers every 30 s forever
+StartLimitIntervalSec=1800
+StartLimitBurst=4
 
 [Service]
 Type=simple
@@ -10,5 +13,13 @@ WorkingDirectory=@REPO@
 # token expiry and the paper session clock are IST
 Environment=TZ=Asia/Kolkata
 ExecStart=/bin/bash @REPO@/deploy/run-paper.sh
+# a crash restarts the session; it resumes today's positions and strategy memory (outside market
+# hours the bot exits by itself, so a restart there is a no-op)
+Restart=on-failure
+RestartSec=30
 # the session ends by itself after 15:30; stop it if it ever hangs
 RuntimeMaxSec=9h
+
+[Install]
+# also start at boot: a reboot during market hours resumes the session
+WantedBy=multi-user.target

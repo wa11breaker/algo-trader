@@ -28,7 +28,7 @@ sys.path.insert(0, str(HERE))
 from today import load_flow  # noqa: E402
 
 LOT = 65   # NIFTY lot size in Nov 2026 (the live paper fills)
-EXPIRY = {date(2026, 11, 4): date(2026, 11, 9)}
+EXPIRY = {date(2026, 11, 4): date(2026, 11, 9), date(2026, 11, 5): date(2026, 11, 9), date(2026, 11, 6): date(2026, 11, 9)}
 LEGACY = {"min_gap_atr": None, "trend": "none", "tp_mode": "r", "breakeven_at_r": 1.0, "min_delta_ratio": None}
 
 

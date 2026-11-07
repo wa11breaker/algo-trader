@@ -8,8 +8,8 @@ from algo.research.index_replay import replay, run_index_only
 from algo.research.sweep import load_grid, parse_period
 
 from .conftest import make_settings
-from .helpers import build_market, fill_day
-from .test_london_liquidity_ifvg import BOX_BULL_FVG, D0, D1, DAY0, EXP, SHORT
+from .helpers import save_market, smooth_price
+from .test_fvg_flow import D0, D1, EXP, GAP, LEGACY, NO_TOUCH, RALLY, RETEST, bars as fvg_bars, day, quiet
 
 DAY = pd.Timestamp("2025-01-07")
 
@@ -43,10 +43,11 @@ def test_replay_breakeven_and_one_position_at_a_time():
 
 
 def test_index_only_run_needs_no_options(tmp_path):
-    build_market(tmp_path, {D0: DAY0, D1: fill_day(BOX_BULL_FVG + SHORT, SHORT[-1][3])}, EXP)
-    trades, strat = run_index_only("london_liquidity_ifvg", {}, "NIFTY", D1, D1, make_settings(tmp_path))
+    spot = pd.concat([fvg_bars(D0, time(9, 15), quiet(23000, 375, 4)), day(GAP + NO_TOUCH + RETEST + RALLY, 23040)])
+    save_market(tmp_path, spot, EXP, pricer=smooth_price)
+    trades, strat = run_index_only("fvg_flow", LEGACY, "NIFTY", D1, D1, make_settings(tmp_path))
     assert len(strat.plan_log) == 1 and strat.skips["no_option"] == 1     # options hidden
-    assert trades.iloc[0]["why"] == "target" and trades.iloc[0]["R"] == pytest.approx(1.0)
+    assert trades.iloc[0]["why"] == "target" and trades.iloc[0]["R"] == pytest.approx(2.0)
 
 
 def test_grid_formats(tmp_path):

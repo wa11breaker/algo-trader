@@ -37,7 +37,7 @@ import pandas as pd
 
 from algo.core.context import Context
 from algo.core.strategy import Strategy
-from algo.indicators import atr, ema, swing_points, vwap
+from algo.indicators import atr, ema, supertrend, swing_points, vwap
 from algo.strategies.index_plan import IndexPlanMixin, hm
 
 MAX_GAPS = 5
@@ -68,17 +68,24 @@ class FvgFlow(IndexPlanMixin, Strategy):
         "moneyness": "OTM1",
         "max_premium": 150.0,          # Rs per unit; step further OTM while the premium is above this
         "max_otm_steps": 6,
-        "delta_est": 0.4,
+        "delta_est": 0.6,              # 2026-11-05 sizing fix: real option moves were 0.5-0.66 x index
         "option_sl_pct": 40.0,
+        "sl_k": 1.5,                   # option safety stop = 1.5 x planned loss (was a flat 40%: 5-7x the plan)
+        "loss_buf": 0.10,              # size for 10% overshoot (slippage, fills through the stop)
+        "min_premium": 20.0,           # skip options under Rs 20
+        "min_sl_pct": 5.0,
         "expiry": "nearest",
         "min_dte": 0,
         "lots": 1,
         "size_from_capital": True,
         # research switches (see the module docstring); defaults keep the original behaviour
-        "min_gap_atr": 0.45,            # tuned 2026-11-04: gaps < 0.45 ATR all lost
+        "min_gap_atr": 0.40,            # 0.45 tuned 2026-11-04; 0.40 better on train+val (2026-11-05, noise-level)
         "disp_atr": None,
         "retest_depth": "edge",
         "trend": "ema",                 # tuned 2026-11-04
+        "st_tf": None,                 # e.g. "5min": also require the Supertrend on this timeframe to agree
+        "st_period": 10,               #   (2026-11-07 feature study: research/fvg/features.py)
+        "st_mult": 3.0,
         "sl_mode": "gap",
         "sl_atr": 1.0,
         "tp_mode": "atr",               # tuned 2026-11-04: target = tp_atr x ATR
@@ -88,7 +95,7 @@ class FvgFlow(IndexPlanMixin, Strategy):
         "trail_atr": None,
         "trail_start_r": None,
         "flow_proxy": False,
-        "min_delta_ratio": 0.1,         # tuned 2026-11-04: skip near-zero delta
+        "min_delta_ratio": 0.05,        # 0.1 tuned 2026-11-04; 0.05 better on Nov 5 + flowdev (noise-level)
         "delta_z": None,
     }
 
@@ -128,6 +135,11 @@ class FvgFlow(IndexPlanMixin, Strategy):
         if p["trend"] != "none" and not self._trend_ok(ctx, d, float(bar["close"])):
             self.skips["trend"] += 1
             return
+        if p["st_tf"]:
+            hb = ctx.spot(p["st_tf"], lookback=200)
+            if len(hb) <= p["st_period"] or d * int(supertrend(hb, p["st_period"], p["st_mult"])["st_dir"].iloc[-1]) < 0:
+                self.skips["supertrend"] += 1
+                return
         delta = self._flow_ok(ctx, d)
         if delta is False:
             return
@@ -262,3 +274,9 @@ class FvgFlow(IndexPlanMixin, Strategy):
             self.skips["flow"] += 1
             return False
         return delta
+
+
+class FvgSupertrend(FvgFlow):
+    """fvg_flow + the 5-min Supertrend must agree with the trade (2026-11-07 feature study)."""
+    name = "fvg_supertrend"
+    defaults = {**FvgFlow.defaults, "st_tf": "5min"}

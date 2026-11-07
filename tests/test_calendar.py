@@ -5,8 +5,8 @@ import pandas as pd
 from algo.backtest.data import HistoricalData
 from algo.backtest.engine import run_backtest
 from algo.core.risk import parse_weekdays
-from algo.strategies import get_strategy
 
+from .helpers import OrbBuy
 from .conftest import NIFTY, make_settings
 
 
@@ -20,7 +20,7 @@ def test_parse_weekdays():
 def _entry_days(synthetic, calendar, use_risk=False):
     days = synthetic["days"]
     s = make_settings(synthetic["root"], calendar=calendar)
-    res = run_backtest(get_strategy("orb_buy"), NIFTY, days[0], days[-1], s,
+    res = run_backtest(OrbBuy(), NIFTY, days[0], days[-1], s,
                        data=HistoricalData(synthetic["store"], NIFTY, days[0], days[-1]), use_risk=use_risk)
     t = res.trades_df()
     return set(pd.to_datetime(t.entry_time).dt.date), res.risk_blocks
