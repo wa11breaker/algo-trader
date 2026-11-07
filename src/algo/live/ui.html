@@ -42,6 +42,7 @@
   header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
   header .sub { font-size: 13px; color: var(--muted-foreground); margin-top: 2px; }
   .controls { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2) var(--s3); font-size: 13px; }
+  select:disabled { cursor: default; color: var(--muted-foreground); }
   select { font: inherit; font-weight: 600; color: var(--foreground); background: var(--card);
            border: 1px solid var(--border); border-radius: 8px; padding: 6px 32px 6px 12px; min-height: 36px;
            appearance: none; cursor: pointer;
@@ -367,7 +368,14 @@ async function whatifLink(d) {
 async function poll() {
   try {
     accounts = await (await fetch("accounts.json", { cache: "no-store" })).json();
-    if (!accounts.length) throw new Error("No paper accounts yet: they appear after `algo paper` processes its first minute.");
+    if (!accounts.length) {
+      const sel = $("acctSel");
+      sel.innerHTML = '<option>No accounts yet</option>'; sel.disabled = true;
+      $("accounts").innerHTML = "";
+      $("subtitle").textContent = "No paper accounts yet. They appear when the bot processes its first minute (weekdays from 09:15 IST).";
+      throw new Error("Waiting for the first session");
+    }
+    $("acctSel").disabled = false;
     if (!accounts.some(a => a.id === current)) current = accounts[0].id;
     renderAccounts();
     const r = await fetch(`live.json?account=${encodeURIComponent(current)}`, { cache: "no-store" });
