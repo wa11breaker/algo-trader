@@ -87,6 +87,16 @@
   .kpi .v { font-size: 22px; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
   .kpi .s { font-size: 12px; color: var(--muted-foreground); margin-top: 2px; }
 
+  /* performance */
+  .perf { display: grid; grid-template-columns: minmax(0, 3fr) minmax(280px, 2fr); gap: var(--s4); }
+  .stats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: var(--s3) var(--s4); align-content: start; }
+  .stat .k { font-size: 12px; color: var(--muted-foreground); }
+  .stat .v { font-size: 16px; font-weight: 600; margin-top: 1px; }
+  .stat .s { font-size: 12px; color: var(--muted-foreground); }
+  .echart { height: 200px; }
+  @media (max-width: 1100px) { .perf { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 720px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
   /* layout */
   .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: var(--s4); align-items: start; }
   .col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s4); min-width: 0; }
@@ -121,6 +131,7 @@
   ul.events li { display: grid; grid-template-columns: 44px auto minmax(0, 1fr); gap: var(--s2); align-items: center;
                  padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
   ul.events li:last-child { border-bottom: 0; }
+  ul.events li.empty { display: block; }
   ul.events .t { color: var(--muted-foreground); }
   ul.events .i { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
@@ -157,6 +168,14 @@
     <div class="card kpi"><div class="k">Today's P&amp;L</div><div class="v" id="daypnl">–</div><div class="s" id="daySub"></div></div>
     <div class="card kpi"><div class="k">Trades today</div><div class="v" id="trades_n">–</div><div class="s" id="tradesSub"></div></div>
     <div class="card kpi"><div class="k">Open positions</div><div class="v" id="open_n">–</div><div class="s" id="openSub"></div></div>
+  </section>
+
+  <section class="card" style="margin-bottom: var(--s4)" aria-label="Performance since start">
+    <div class="card-h"><h2>Performance since start</h2><span class="muted" id="perfSub"></span></div>
+    <div class="card-b perf">
+      <div class="stats" id="stats"><p class="empty">No closed trades yet.</p></div>
+      <div><div class="muted" style="font-size:12px;margin-bottom:4px">Equity, end of each day</div><div id="eqChart" class="echart"></div></div>
+    </div>
   </section>
 
   <div class="layout">
@@ -220,6 +239,53 @@ function makeChart(el) {
   return { chart: c, series: s, lines: [] };
 }
 const spot = makeChart($("spot"));
+const eqc = LightweightCharts.createChart($("eqChart"), {
+  autoSize: true,
+  layout: { background: { color: "transparent" }, textColor: css("--muted-foreground"),
+            fontFamily: "Inter, system-ui, sans-serif", fontSize: 11, attributionLogo: false },
+  grid: { vertLines: { visible: false }, horzLines: { color: css("--border") } },
+  rightPriceScale: { borderVisible: false, scaleMargins: { top: 0.15, bottom: 0.1 } },
+  timeScale: { borderVisible: false }, handleScroll: false, handleScale: false,
+  crosshair: { vertLine: { color: css("--ring") }, horzLine: { color: css("--ring") } },
+});
+const eqLine = eqc.addLineSeries({ color: css("--accent"), lineWidth: 2, priceLineVisible: false,
+                                   priceFormat: { type: "price", precision: 0, minMove: 1 },
+                                   pointMarkersVisible: true, pointMarkersRadius: 3 });
+let eqStart = null;
+
+function stat(k, v, sub = "", c = "") {
+  return `<div class="stat"><div class="k">${k}</div><div class="v ${c}">${v}</div>${sub ? `<div class="s">${sub}</div>` : ""}</div>`;
+}
+const pct = v => v == null ? "–" : `${v >= 0 ? "+" : ""}${Number(v).toFixed(1)}%`;
+
+function renderStats(m) {
+  if (!m || !m.trades) {
+    $("stats").innerHTML = '<p class="empty">No closed trades yet.</p>';
+    $("perfSub").textContent = ""; eqLine.setData([]); return;
+  }
+  $("perfSub").textContent = `${m.trading_days} trading day${m.trading_days === 1 ? "" : "s"} · started with ${inr(m.initial_capital)}`;
+  const streak = m.streak > 0 ? `${m.streak} win${m.streak > 1 ? "s" : ""}` : `${-m.streak} loss${m.streak < -1 ? "es" : ""}`;
+  $("stats").innerHTML = [
+    stat("Total P&L", sinr(m.net_pnl), pct(m.return_pct) + " on capital", cls(m.net_pnl)),
+    stat("Win rate", `${Math.round(m.win_rate_pct)}%`, `${m.wins} won · ${m.losses} lost`),
+    stat("Trades", m.trades, `${(m.trades / Math.max(m.trading_days, 1)).toFixed(1)} per day`),
+    stat("Profit factor", m.profit_factor == null ? "∞" : Number(m.profit_factor).toFixed(2), "gross wins ÷ gross losses"),
+    stat("Avg win / avg loss", `${inr(m.avg_win)} / ${inr(Math.abs(m.avg_loss))}`,
+         m.avg_loss ? `ratio ${(m.avg_win / Math.abs(m.avg_loss)).toFixed(2)}` : ""),
+    stat("Per trade", sinr(m.expectancy_per_trade), "average net", cls(m.expectancy_per_trade)),
+    stat("Max drawdown", m.max_drawdown ? sinr(m.max_drawdown) : "₹0", `${pct(m.max_drawdown_pct)} from peak`, m.max_drawdown < 0 ? "neg" : ""),
+    stat("Now vs peak", m.drawdown_now ? sinr(m.drawdown_now) : "at peak", `peak ${inr(m.peak_equity)}`, m.drawdown_now < 0 ? "neg" : "pos"),
+    stat("Best / worst trade", `<span class="pos">${sinr(m.largest_win)}</span> / <span class="neg">${sinr(m.largest_loss)}</span>`),
+    stat("Worst day", sinr(m.worst_day), `${Math.round(m.profitable_days_pct)}% of days profitable`, cls(m.worst_day)),
+    stat("Streak", streak, `longest losing run ${m.max_consecutive_losses}`, m.streak > 0 ? "pos" : "neg"),
+    stat("Charges paid", inr(m.total_costs), "brokerage, taxes, slippage"),
+  ].join("");
+  eqLine.setData(m.equity_curve || []);
+  if (eqStart) eqLine.removePriceLine(eqStart);
+  eqStart = eqLine.createPriceLine({ price: m.initial_capital, color: css("--ring"), lineWidth: 1, lineStyle: 2,
+                                     axisLabelVisible: false, title: "start" });
+  eqc.timeScale().fitContent();
+}
 let fitted = false;
 const posCharts = new Map();
 
@@ -250,7 +316,8 @@ function renderAccounts() {
     return `<button class="acct ${a.id === current ? "sel" : ""}" data-id="${esc(a.id)}">
       <span class="top"><span class="name">${esc(a.name)}</span><span class="badge dot ${k}">${label}</span></span>
       <span class="eq">${inr((a.equity ?? 0) + (a.unrealised ?? 0))}</span>
-      <span class="meta"><span class="${cls(day)}">${sinr(day)}</span> today · ${a.trades ?? 0} trades · ${a.open ?? 0} open</span>
+      <span class="meta"><span class="${cls(day)}">${sinr(day)}</span> today · ${a.open ?? 0} open</span>
+      <span class="meta">${a.win_rate_pct == null ? "no closed trades yet" : `win ${Math.round(a.win_rate_pct)}% · <span class="${cls(a.net_pnl)}">${sinr(a.net_pnl)}</span> since start`}</span>
     </button>`;
   }).join("");
   for (const b of $("accounts").querySelectorAll(".acct")) b.onclick = () => select(b.dataset.id);
@@ -324,7 +391,9 @@ function render(d) {
       .map(([title, price, color]) => pc.series.createPriceLine({ price, color, title, lineWidth: 1, lineStyle: 2 }));
   }
 
-  $("posSub").textContent = d.positions.length ? `unrealised ${sinr(d.unrealised)}` : "";
+  const inUse = d.positions.reduce((s, p) => s + p.entry_price * p.qty, 0);
+  $("posSub").textContent = d.positions.length
+    ? `capital in use ${inr(inUse)} (${Math.round(inUse / (d.equity + d.unrealised) * 100)}%) · ${sinr(d.unrealised)}` : "capital in use ₹0";
   $("positions").innerHTML = d.positions.length ? d.positions.map(p => `<div class="prow">
       <span class="sym">${esc(p.symbol)}</span><span class="pnl ${cls(p.pnl)}">${sinr(p.pnl)}</span>
       <span class="d">${p.side} ×${p.qty} @ ${num(p.entry_price)} (${hhmm(p.entry_time)}) · LTP ${num(p.ltp)} · SL ${num(p.sl_price)}${p.target_price ? " · TGT " + num(p.target_price) : ""}</span>
@@ -383,6 +452,8 @@ async function poll() {
     const d = await r.json();
     render(d);
     whatifLink(d);
+    const sr = await fetch(`stats.json?account=${encodeURIComponent(current)}`, { cache: "no-store" });
+    renderStats(sr.ok ? await sr.json() : null);
   } catch (e) {
     $("status").className = "badge dot stale"; $("status").textContent = "No data";
     $("updated").textContent = e.message;

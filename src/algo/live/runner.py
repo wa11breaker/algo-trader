@@ -366,7 +366,7 @@ class PaperRunner:
                 closed = pd.Timestamp(now).floor("min").to_pydatetime() - timedelta(minutes=1)
                 while nxt <= min(closed, last_bar) and self.try_step(nxt, now):
                     nxt += timedelta(minutes=1)
-                if all(a.session.cur_day is None for a in self.active) and self._holiday(today):
+                if self._holiday(today):   # (an empty minute may already have been stepped after the 3-min gap)
                     self.echo("No market data by 09:20: treating today as a holiday.")
                     return
                 if nxt <= closed:   # waiting for a late bar: poll again shortly

@@ -298,7 +298,69 @@ def _account_summary(d: Path) -> dict:
             "underlying": j.get("underlying"), "equity": j.get("equity"), "unrealised": j.get("unrealised"),
             "realised_today": j.get("realised_today"), "initial_capital": j.get("initial_capital"),
             "open": len(j.get("positions") or []), "trades": len(j.get("trades") or []),
-            "day_closed": j.get("day_closed"), "halted_on": j.get("halted_on"), "ts": j.get("ts")}
+            "day_closed": j.get("day_closed"), "halted_on": j.get("halted_on"), "ts": j.get("ts"),
+            **{k: _paper_stats(d).get(k) for k in ("win_rate_pct", "net_pnl", "return_pct")}}
+
+
+def _paper_result(store, settings=None, code: str = ""):
+    """A paper account as a BacktestResult (for compute_metrics / write_report); None if no account."""
+    from algo.backtest.engine import BacktestResult
+    from algo.live.state import withdrawals_from
+    st = store.load()
+    if st is None:
+        return None
+    days = sorted(date.fromisoformat(p.stem.removeprefix("events-")) for p in store.root.glob("events-*.jsonl"))
+    s = settings
+    return BacktestResult(strategy=st.strategy, underlying=st.underlying,
+                          start=days[0] if days else date.fromisoformat(st.started),
+                          end=days[-1] if days else date.today(), params=st.params,
+                          initial_capital=st.initial_capital, trades=store.trades(), trading_days=days,
+                          withdrawals=withdrawals_from(st),
+                          halted_on=date.fromisoformat(st.halted_on) if st.halted_on else None,
+                          settings_snapshot={"paper": s.paper, "costs": s.costs, "execution": s.execution} if s else {},
+                          code_hash=code)
+
+
+STATS_KEYS = ("trades", "win_rate_pct", "net_pnl", "return_pct", "profit_factor", "avg_win", "avg_loss",
+              "largest_win", "largest_loss", "expectancy_per_trade", "max_consecutive_losses", "worst_day",
+              "profitable_days_pct", "trading_days", "total_costs", "exit_reasons", "initial_capital")
+_stats_cache: dict = {}
+
+
+def _paper_stats(d: Path) -> dict:
+    """Performance since the account started (the numbers `algo paper-report` prints), cached per file change."""
+    import math
+    from algo.analytics.metrics import compute_metrics, equity_curve, round_trips
+    from algo.live.state import PaperStore
+    store = PaperStore(d)
+    key = tuple(f.stat().st_mtime_ns if f.exists() else 0 for f in (store.state_path, store.trades_path))
+    hit = _stats_cache.get(d)
+    if hit and hit[0] == key:
+        return hit[1]
+    result = _paper_result(store)
+    out: dict = {"trades": 0}
+    if result is not None:
+        m = compute_metrics(result)
+        out = {k: m[k] for k in STATS_KEYS if k in m}
+        if isinstance(out.get("profit_factor"), float) and math.isinf(out["profit_factor"]):
+            out["profit_factor"] = None                       # no losing trade yet
+        eq = equity_curve(result)
+        if len(eq):
+            out |= {"max_drawdown": round(float(eq["drawdown"].min()), 2),
+                    "max_drawdown_pct": round(float(eq["drawdown_pct"].min()), 2),
+                    "drawdown_now": round(float(eq["drawdown"].iloc[-1]), 2),
+                    "drawdown_now_pct": round(float(eq["drawdown_pct"].iloc[-1]), 2),
+                    "peak_equity": round(float(eq["total_wealth"].max()), 2),
+                    "equity_curve": [{"time": str(t.date()), "value": round(float(v), 2)}
+                                     for t, v in eq["total_wealth"].items()]}
+        if result.trades:
+            net = round_trips(result)["net_pnl"].tolist()
+            won = net[-1] > 0
+            n = next((i for i, x in enumerate(reversed(net)) if (x > 0) != won), len(net))
+            out |= {"wins": sum(x > 0 for x in net), "losses": sum(x <= 0 for x in net),
+                    "streak": n if won else -n}
+    _stats_cache[d] = (key, out)
+    return out
 
 
 def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):
@@ -327,6 +389,10 @@ def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):
             if u.path == "/accounts.json":
                 return self._send(json.dumps([_account_summary(d) for d in accts.values()], default=str).encode(),
                                   "application/json")
+            if u.path == "/stats.json":
+                d = accts.get((parse_qs(u.query).get("account") or [None])[0])
+                if d is not None:
+                    return self._send(json.dumps(_paper_stats(d), default=str).encode(), "application/json")
             if u.path == "/live.json":
                 want = (parse_qs(u.query).get("account") or [None])[0]
                 d = accts.get(want) if want else next(iter(accts.values()), None)
@@ -380,24 +446,14 @@ def paper_report(
     import pandas as pd
     from algo.analytics.metrics import compute_metrics
     from algo.analytics.report import write_report
-    from algo.backtest.engine import BacktestResult, code_hash
-    from algo.live.state import PaperStore, withdrawals_from
+    from algo.backtest.engine import code_hash
+    from algo.live.state import PaperStore
 
     s = get_settings()
     store = PaperStore(s.root / s.paper.get("state_dir", "paper") / f"{strategy}_{ul.upper()}")
-    st = store.load()
-    if st is None:
+    result = _paper_result(store, s, code_hash())
+    if result is None:
         raise RuntimeError(f"No paper account at {store.root}")
-    trades = store.trades()
-    days = sorted(date.fromisoformat(p.stem.removeprefix("events-")) for p in store.root.glob("events-*.jsonl"))
-    start = days[0] if days else date.fromisoformat(st.started)
-    end = days[-1] if days else date.today()
-    result = BacktestResult(strategy=st.strategy, underlying=st.underlying, start=start, end=end, params=st.params,
-                            initial_capital=st.initial_capital, trades=trades, trading_days=days,
-                            withdrawals=withdrawals_from(st),
-                            halted_on=date.fromisoformat(st.halted_on) if st.halted_on else None,
-                            settings_snapshot={"paper": s.paper, "costs": s.costs, "execution": s.execution},
-                            code_hash=code_hash())
     out = write_report(result, s.reports_dir / "paper")
     for k, v in compute_metrics(result).items():
         typer.echo(f"  {k:26s} {v}")

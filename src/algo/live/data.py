@@ -12,6 +12,7 @@ also carry order-flow columns (buy_vol, sell_vol, delta); history minutes have N
 from __future__ import annotations
 
 import logging
+import time as _time
 from datetime import date, datetime, time, timedelta
 
 import numpy as np
@@ -27,6 +28,7 @@ from algo.live.orderflow import BarBuilder, Quote
 
 log = logging.getLogger(__name__)
 SESSION_OPEN = time(9, 15)
+BACKFILL_RETRY_S = 20.0   # min seconds between REST back-fill attempts per symbol
 FLOW_COLUMNS = ["volume", "buy_vol", "sell_vol", "delta"]
 
 
@@ -53,6 +55,7 @@ class LiveMarketData(BarFrames, MarketData):
         self.live_from: datetime | None = None     # first minute fully covered by the feed
         self.now: datetime | None = None           # bar start of the last advanced minute
         self._backfilled: set = set()
+        self._last_try: dict[str, float] = {}     # symbol -> monotonic time of the last REST back-fill
         self._rest_quotes: dict[tuple[str, datetime], dict] = {}
         self.options_enabled = True
 
@@ -129,6 +132,10 @@ class LiveMarketData(BarFrames, MarketData):
         missing = [t for t in want if t not in have and (symbol, t) not in self._backfilled]
         if not missing:
             return
+        now = _time.monotonic()
+        if now - self._last_try.get(symbol, -1e9) < BACKFILL_RETRY_S:
+            return              # the runner polls every second while a bar is late: don't hammer REST (5000/day)
+        self._last_try[symbol] = now
         try:
             got = regular_session(self.client.history(symbol, missing[0].to_pydatetime(), ts, oi=key == "fut"))
         except Exception as e:   # noqa: BLE001 - a failed back-fill must not stop the session

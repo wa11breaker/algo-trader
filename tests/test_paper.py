@@ -421,7 +421,17 @@ def test_dashboard_serves_every_account_and_nothing_else(tmp_path):
         (tmp_path / name).mkdir()
         (tmp_path / name / "live.json").write_text(json.dumps({"account": name.split("_NIFTY")[0], "equity": 50000,
                                                                 "positions": [], "trades": []}))
-    (tmp_path / "fvg_flow_NIFTY" / "state.json").write_text("{}")
+    acct = PaperStore(tmp_path / "fvg_flow_NIFTY")
+    acct.save(PaperState(strategy="fvg_flow", underlying="NIFTY", params={}, initial_capital=50_000,
+                         started="2026-11-09"))
+    head = "symbol,underlying,expiry,strike,type,side,lots,lot_size,qty,entry_time,entry_price,exit_time," \
+           "exit_price,exit_reason,gross_pnl,costs,net_pnl,tag,group,instrument_key,exchange\n"
+    row = "NIFTY 10NOV26 25000 CE,NIFTY,2026-11-10,25000.0,CE,BUY,1,65,65,{d} 10:00:00,100,{d} 10:05:00,110," \
+          "TARGET,{p},10,{p},x,{g},NSE:X,NSE\n"
+    acct.trades_path.write_text(head + row.format(d="2026-11-09", p=3000, g=1) + row.format(d="2026-11-09", p=-1000, g=2)
+                                + row.format(d="2026-11-10", p=500, g=3))
+    for day in ("2026-11-09", "2026-11-10"):
+        (acct.root / f"events-{day}.jsonl").write_text("")
     (tmp_path / "fvg_flow_NIFTY" / "whatif-2026-11-06.html").write_text("<p>what-if</p>")
     a, url_a = _dashboard(tmp_path, 18770)
     b, url_b = _dashboard(tmp_path, 18770)      # port taken -> next one
@@ -435,8 +445,14 @@ def test_dashboard_serves_every_account_and_nothing_else(tmp_path):
         assert json.loads(get("/live.json?account=fvg_supertrend_NIFTY"))["account"] == "fvg_supertrend"
         assert json.loads(get("/live.json"))["account"] == "fvg_flow"                 # default: the first
         assert get("/fvg_flow_NIFTY/whatif-2026-11-06.html") == b"<p>what-if</p>"
+        st = json.loads(get("/stats.json?account=fvg_flow_NIFTY"))
+        assert st["trades"] == 3 and st["wins"] == 2 and st["losses"] == 1 and st["streak"] == 1
+        assert st["win_rate_pct"] == pytest.approx(66.67) and st["net_pnl"] == pytest.approx(2470)        # gross - Rs 10 costs each
+        assert st["max_drawdown"] == 0 and st["peak_equity"] == pytest.approx(52_470)   # daily: +1980, +490
+        assert [p["value"] for p in st["equity_curve"]] == [51_980, 52_470]
+        assert accts[0]["win_rate_pct"] == pytest.approx(66.67)
         assert b"<title>" in get("/")
-        for bad in ("/live.json?account=../x", "/live.json?account=fvg_flow_NIFTY-archive-20261107-1200",
+        for bad in ("/stats.json?account=../x", "/stats.json", "/live.json?account=../x", "/live.json?account=fvg_flow_NIFTY-archive-20261107-1200",
                     "/fvg_flow_NIFTY/state.json", "/state.json", "/fvg_flow_NIFTY/whatif-../state.json"):
             with pytest.raises(urllib.error.HTTPError):
                 get(bad)
@@ -493,3 +509,18 @@ def test_two_accounts_share_one_feed_and_keep_separate_books(live, synthetic, tm
     with pytest.raises(ValueError, match="duplicate"):
         PaperRunner([PaperAccount(OrbBuy(), a), PaperAccount(OrbBuy(), b)], UL, make_settings(synthetic["root"]),
                     live["data"], live["feed"])
+
+
+def test_holiday_ends_the_session_at_0920_without_hammering_rest(live, synthetic, tmp_path):
+    holiday = max(synthetic["days"]) + timedelta(days=1)   # a weekday with no market data
+    while holiday.weekday() >= 5:
+        holiday += timedelta(days=1)
+    clock = Clock(datetime.combine(holiday, time(9, 10)), live["feed"])
+    out = []
+    store = PaperStore(tmp_path / "paper")
+    PaperRunner([PaperAccount(OrbBuy(), store)], UL, make_settings(synthetic["root"]), live["data"], live["feed"],
+                fill_model="bar_open", now_fn=clock.now, sleep_fn=clock.sleep, echo=out.append).run()
+    assert any("holiday" in m for m in out), out[-3:]
+    assert clock.now() < datetime.combine(holiday, time(9, 25))
+    today_calls = [c for c in live["client"].history_calls if pd.Timestamp(c[1]).date() == holiday]
+    assert len(today_calls) <= 4                     # was one REST call per symbol per second
