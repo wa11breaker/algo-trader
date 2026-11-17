@@ -323,7 +323,8 @@ def _paper_result(store, settings=None, code: str = ""):
 
 STATS_KEYS = ("trades", "win_rate_pct", "net_pnl", "return_pct", "profit_factor", "avg_win", "avg_loss",
               "largest_win", "largest_loss", "expectancy_per_trade", "max_consecutive_losses", "worst_day",
-              "profitable_days_pct", "trading_days", "total_costs", "exit_reasons", "initial_capital")
+              "profitable_days_pct", "trading_days", "total_costs", "exit_reasons", "initial_capital",
+              "sharpe_daily_annualized", "gross_pnl")
 _stats_cache: dict = {}
 
 
@@ -354,13 +355,67 @@ def _paper_stats(d: Path) -> dict:
                     "equity_curve": [{"time": str(t.date()), "value": round(float(v), 2)}
                                      for t, v in eq["total_wealth"].items()]}
         if result.trades:
-            net = round_trips(result)["net_pnl"].tolist()
+            rt = round_trips(result)
+            net = rt["net_pnl"].tolist()
             won = net[-1] > 0
             n = next((i for i, x in enumerate(reversed(net)) if (x > 0) != won), len(net))
             out |= {"wins": sum(x > 0 for x in net), "losses": sum(x <= 0 for x in net),
                     "streak": n if won else -n}
+            out |= _paper_breakdown(result, rt, eq)
     _stats_cache[d] = (key, out)
     return out
+
+
+def _paper_breakdown(result, rt, eq) -> dict:
+    """Calendar rows, best/worst day, hold time, and P&L split by direction and by how trades ended."""
+    import pandas as pd
+    from algo.analytics.metrics import mean_ci
+    rt = rt.assign(day=pd.to_datetime(rt["exit_time"]).dt.strftime("%Y-%m-%d"),
+                   hold=(pd.to_datetime(rt["exit_time"]) - pd.to_datetime(rt["entry_time"])).dt.total_seconds() / 60)
+    per_day = rt.groupby("day")["net_pnl"].agg(["count", lambda s: int((s > 0).sum())])
+    start_eq = (eq["total_wealth"] - eq["net_pnl"])
+    days = []
+    for t, row in eq.iterrows():
+        k = str(t.date())
+        c = per_day.loc[k] if k in per_day.index else None
+        days.append({"date": k, "pnl": round(float(row["net_pnl"]), 2),
+                     "pct": round(float(row["net_pnl"] / start_eq[t] * 100), 2) if start_eq[t] else 0.0,
+                     "trades": int(c.iloc[0]) if c is not None else 0, "wins": int(c.iloc[1]) if c is not None else 0})
+    traded = [x for x in days if x["trades"]]
+    best = max(traded, key=lambda x: x["pnl"]) if traded else None
+    worst = min(traded, key=lambda x: x["pnl"]) if traded else None
+
+    legs = result.trades_df()
+    legs["day"] = pd.to_datetime(legs["exit_time"]).dt.strftime("%Y-%m-%d")
+    for c in ("entry_time", "exit_time"):
+        legs[c] = pd.to_datetime(legs[c]).dt.strftime("%Y-%m-%d %H:%M")
+    legs = legs.round({"entry_price": 2, "exit_price": 2, "net_pnl": 2})
+    cols = [c for c in ("symbol", "side", "qty", "entry_time", "entry_price", "exit_time", "exit_price",
+                        "exit_reason", "net_pnl", "tag") if c in legs]
+    by_day = {k: g[cols].astype(object).where(g[cols].notna(), None).to_dict("records")
+              for k, g in legs.groupby("day")}
+
+    def group(g) -> dict:
+        return {"trades": int(len(g)), "wins": int((g["net_pnl"] > 0).sum()),
+                "net_pnl": round(float(g["net_pnl"].sum()), 2)}
+    # a stop that hit after the stop moved to breakeven is a different outcome from a real loss
+    how = rt["exit_reason"].where(~((rt["exit_reason"] == "SL") & (rt["gross_pnl"] >= 0)), "SL_BE")
+    tag_name = {"fvg_up": "Calls (bullish)", "fvg_dn": "Puts (bearish)"}
+    return {
+        "days": days,
+        "trades_by_day": by_day,
+        "best_day": best and best["pnl"], "best_day_date": best and best["date"],
+        "worst_day_date": worst and worst["date"],
+        "avg_day": round(sum(x["pnl"] for x in traded) / len(traded), 2) if traded else 0.0,
+        "green_days": sum(x["pnl"] > 0 for x in traded), "red_days": sum(x["pnl"] <= 0 for x in traded),
+        "avg_hold_min": round(float(rt["hold"].mean()), 1),
+        "avg_hold_win_min": round(float(rt.loc[rt["net_pnl"] > 0, "hold"].mean()), 1) if (rt["net_pnl"] > 0).any() else None,
+        "avg_hold_loss_min": round(float(rt.loc[rt["net_pnl"] <= 0, "hold"].mean()), 1) if (rt["net_pnl"] <= 0).any() else None,
+        "per_trade_ci": mean_ci(rt["net_pnl"], digits=2),
+        "by_exit": {k: group(g) for k, g in rt.groupby(how)},
+        "by_direction": {tag_name.get(k, k or "other"): group(g) for k, g in rt.groupby(rt["tag"].fillna(""))},
+        "by_hour": {f"{h:02d}:00": group(g) for h, g in rt.groupby(pd.to_datetime(rt["entry_time"]).dt.hour)},
+    }
 
 
 def _dashboard(root: Path, port: int, host: str = "127.0.0.1"):

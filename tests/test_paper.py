@@ -524,3 +524,24 @@ def test_holiday_ends_the_session_at_0920_without_hammering_rest(live, synthetic
     assert clock.now() < datetime.combine(holiday, time(9, 25))
     today_calls = [c for c in live["client"].history_calls if pd.Timestamp(c[1]).date() == holiday]
     assert len(today_calls) <= 4                     # was one REST call per symbol per second
+
+
+def test_round_trips_do_not_merge_paper_trades_from_different_days():
+    # each paper session's broker restarts order ids, so day 1 and day 2 both have a trade with group "1"
+    from algo.analytics.metrics import compute_metrics, round_trips
+    from algo.backtest.engine import BacktestResult
+    from algo.core.models import ExitReason, OptionContract, Trade
+    c = OptionContract("NIFTY", date(2026, 11, 17), 25400, OptionType.CE, 65)
+
+    def tr(day, pnl, group):
+        t0 = datetime(2026, 11, day, 10, 0)
+        return Trade(c, Side.BUY, 1, 65, t0, 100.0, t0 + timedelta(minutes=10), 100 + pnl / 65,
+                     ExitReason.TARGET if pnl > 0 else ExitReason.STOP_LOSS, pnl, 0.0, "fvg_up", group)
+
+    res = BacktestResult("fvg_flow", "NIFTY", date(2026, 11, 16), date(2026, 11, 17), {}, 50_000,
+                         [tr(16, -500, "1"), tr(17, 900, "1"), tr(17, 300, "3")],
+                         trading_days=[date(2026, 11, 16), date(2026, 11, 17)])
+    rt = round_trips(res)
+    assert len(rt) == 3
+    m = compute_metrics(res)
+    assert m["trades"] == 3 and m["worst_day"] == -500 and m["largest_win"] == 900

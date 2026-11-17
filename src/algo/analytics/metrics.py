@@ -19,7 +19,10 @@ def round_trips(result: BacktestResult) -> pd.DataFrame:
     df = result.trades_df()
     if df.empty:
         return df
-    df["group"] = df["group"].replace("", np.nan).fillna(pd.Series(df.index.astype(str), index=df.index))
+    g = df["group"].astype(str).replace({"": np.nan, "nan": np.nan, "None": np.nan})
+    g = g.fillna(pd.Series(df.index.astype(str), index=df.index))
+    # order ids restart with each paper session's broker, so a bare id repeats across days: key by entry day too
+    df["group"] = pd.to_datetime(df["entry_time"]).dt.strftime("%Y%m%d") + "|" + g
     df["net_lot65"] = df["net_pnl"] * REFERENCE_LOT / df["lot_size"]
     g = df.groupby("group", sort=False)
     out = pd.DataFrame({

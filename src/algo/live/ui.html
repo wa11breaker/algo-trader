@@ -97,6 +97,39 @@
   @media (max-width: 1100px) { .perf { grid-template-columns: minmax(0, 1fr); } }
   @media (max-width: 720px) { .stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 
+  /* calendar + breakdown */
+  .insights { display: grid; grid-template-columns: minmax(0, 3fr) minmax(300px, 2fr); gap: var(--s4); margin-bottom: var(--s4); align-items: start; }
+  .calnav { display: flex; align-items: center; gap: var(--s2); }
+  .calnav b { font-size: 13px; font-weight: 600; min-width: 112px; text-align: center; }
+  .navbtn { font: inherit; font-size: 14px; line-height: 1; color: var(--foreground); background: var(--card); border: 1px solid var(--border);
+            border-radius: 8px; width: 30px; height: 30px; cursor: pointer; }
+  .navbtn:disabled { color: var(--muted-foreground); cursor: default; opacity: .5; }
+  .calgrid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+  .calgrid .wd { font-size: 11px; font-weight: 500; color: var(--muted-foreground); padding: 0 4px; }
+  .cday { font: inherit; color: inherit; text-align: left; border: 1px solid var(--border); border-radius: 8px; padding: 6px 8px;
+          min-height: 62px; background: var(--card); display: grid; align-content: space-between; gap: 2px; min-width: 0; }
+  .cday.has { cursor: pointer; }
+  .cday.has:hover { border-color: var(--ring); }
+  .cday.sel { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .cday.off { background: transparent; border-style: dashed; color: var(--muted-foreground); }
+  .cday.blank { visibility: hidden; }
+  .cday .dn { font-size: 11px; color: var(--muted-foreground); }
+  .cday .dp { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cday .dt { font-size: 11px; color: var(--muted-foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .dayhead { display: flex; justify-content: space-between; align-items: baseline; gap: var(--s3); margin: var(--s4) 0 var(--s1); }
+  .dayhead h3 { font-size: 13px; font-weight: 600; }
+  .bars { display: grid; gap: var(--s2); margin-bottom: var(--s4); }
+  .bars:last-child { margin-bottom: 0; }
+  .bars h3 { font-size: 12px; font-weight: 500; color: var(--muted-foreground); }
+  .bar { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px var(--s3); font-size: 13px; }
+  .bar .l { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bar .l span { color: var(--muted-foreground); font-size: 12px; }
+  .bar .r { font-weight: 600; text-align: right; }
+  .bar .track { grid-column: 1 / -1; height: 6px; border-radius: 3px; background: var(--muted); position: relative; overflow: hidden; }
+  .bar .fill { position: absolute; top: 0; bottom: 0; border-radius: 3px; }
+  @media (max-width: 1100px) { .insights { grid-template-columns: minmax(0, 1fr); } }
+  @media (max-width: 720px) { .cday { min-height: 54px; padding: 4px 6px; } .cday .dt { display: none; } .cday .dp { font-size: 12px; } }
+
   /* layout */
   .layout { display: grid; grid-template-columns: minmax(0, 2fr) minmax(320px, 1fr); gap: var(--s4); align-items: start; }
   .col { display: grid; grid-template-columns: minmax(0, 1fr); gap: var(--s4); min-width: 0; }
@@ -177,6 +210,28 @@
       <div><div class="muted" style="font-size:12px;margin-bottom:4px">Equity, end of each day</div><div id="eqChart" class="echart"></div></div>
     </div>
   </section>
+
+  <div class="insights">
+    <section class="card" aria-label="Daily P&L calendar">
+      <div class="card-h"><h2>Calendar</h2>
+        <div class="calnav">
+          <button class="navbtn" id="calPrev" aria-label="Previous month">‹</button>
+          <b id="calMonth">–</b>
+          <button class="navbtn" id="calNext" aria-label="Next month">›</button>
+        </div>
+      </div>
+      <div class="card-b">
+        <p class="muted" id="calSub" style="font-size:12px;margin-bottom:var(--s2)"></p>
+        <div class="calgrid" id="cal"></div>
+        <div class="dayhead"><h3 id="dayTitle"></h3><span class="muted" id="daySum" style="font-size:12px"></span></div>
+        <div class="scroll" id="dayTrades"></div>
+      </div>
+    </section>
+    <section class="card" aria-label="Where the P&L comes from">
+      <div class="card-h"><h2>Where the P&amp;L comes from</h2><span class="muted">since start</span></div>
+      <div class="card-b" id="breakdown"><p class="empty">No closed trades yet.</p></div>
+    </section>
+  </div>
 
   <div class="layout">
     <div class="col">
@@ -261,9 +316,11 @@ const pct = v => v == null ? "–" : `${v >= 0 ? "+" : ""}${Number(v).toFixed(1)
 function renderStats(m) {
   if (!m || !m.trades) {
     $("stats").innerHTML = '<p class="empty">No closed trades yet.</p>';
-    $("perfSub").textContent = ""; eqLine.setData([]); return;
+    $("perfSub").textContent = ""; eqLine.setData([]);
+    renderCalendar(null); renderBreakdown(null); return;
   }
   $("perfSub").textContent = `${m.trading_days} trading day${m.trading_days === 1 ? "" : "s"} · started with ${inr(m.initial_capital)}`;
+  const ci = m.per_trade_ci;
   const streak = m.streak > 0 ? `${m.streak} win${m.streak > 1 ? "s" : ""}` : `${-m.streak} loss${m.streak < -1 ? "es" : ""}`;
   $("stats").innerHTML = [
     stat("Total P&L", sinr(m.net_pnl), pct(m.return_pct) + " on capital", cls(m.net_pnl)),
@@ -276,16 +333,121 @@ function renderStats(m) {
     stat("Max drawdown", m.max_drawdown ? sinr(m.max_drawdown) : "₹0", `${pct(m.max_drawdown_pct)} from peak`, m.max_drawdown < 0 ? "neg" : ""),
     stat("Now vs peak", m.drawdown_now ? sinr(m.drawdown_now) : "at peak", `peak ${inr(m.peak_equity)}`, m.drawdown_now < 0 ? "neg" : "pos"),
     stat("Best / worst trade", `<span class="pos">${sinr(m.largest_win)}</span> / <span class="neg">${sinr(m.largest_loss)}</span>`),
-    stat("Worst day", sinr(m.worst_day), `${Math.round(m.profitable_days_pct)}% of days profitable`, cls(m.worst_day)),
+    stat("Best / worst day", `<span class="${cls(m.best_day)}">${sinr(m.best_day)}</span> / <span class="${cls(m.worst_day)}">${sinr(m.worst_day)}</span>`,
+         `${dayLabel(m.best_day_date)} / ${dayLabel(m.worst_day_date)}`),
+    stat("Avg day", sinr(m.avg_day), `${m.green_days ?? 0} green · ${m.red_days ?? 0} red days`, cls(m.avg_day)),
     stat("Streak", streak, `longest losing run ${m.max_consecutive_losses}`, m.streak > 0 ? "pos" : "neg"),
-    stat("Charges paid", inr(m.total_costs), "brokerage, taxes, slippage"),
+    stat("Avg hold", m.avg_hold_min == null ? "–" : `${Math.round(m.avg_hold_min)} min`,
+         m.avg_hold_win_min != null && m.avg_hold_loss_min != null ? `wins ${Math.round(m.avg_hold_win_min)} · losses ${Math.round(m.avg_hold_loss_min)} min` : ""),
+    stat("Edge so far", ci ? `t = ${Number(ci.t_stat).toFixed(2)}` : "–",
+         ci ? (ci.ci95[0] > 0 ? "per-trade mean is above zero (95%)" : `not proven yet: 95% range ${kinr(ci.ci95[0])} to ${kinr(ci.ci95[1])}`) : "",
+         ci && ci.ci95[0] > 0 ? "pos" : ""),
+    stat("Sharpe (daily)", m.sharpe_daily_annualized == null ? "–" : Number(m.sharpe_daily_annualized).toFixed(2), "annualised; noisy on few days"),
+    stat("Charges paid", inr(m.total_costs), m.gross_pnl ? `${Math.round(m.total_costs / Math.abs(m.gross_pnl) * 100)}% of gross P&L` : "brokerage, taxes, slippage"),
   ].join("");
+  renderCalendar(m);
+  renderBreakdown(m);
   eqLine.setData(m.equity_curve || []);
   if (eqStart) eqLine.removePriceLine(eqStart);
   eqStart = eqLine.createPriceLine({ price: m.initial_capital, color: css("--ring"), lineWidth: 1, lineStyle: 2,
                                      axisLabelVisible: false, title: "start" });
   eqc.timeScale().fitContent();
 }
+// ---- calendar: one cell per weekday, coloured by that day's net P&L; click a day for its trades
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const WD = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+function dayLabel(iso) {
+  if (!iso) return "–";
+  const d = new Date(iso + "T00:00:00Z");
+  return `${WD[(d.getUTCDay() + 6) % 7]} ${d.getUTCDate()} ${MONTHS[d.getUTCMonth()].slice(0, 3)}`;
+}
+let cal = { month: null, sel: null, acct: null, m: null };
+$("calPrev").onclick = () => shiftMonth(-1);
+$("calNext").onclick = () => shiftMonth(1);
+function shiftMonth(k) {
+  const [y, mo] = cal.month.split("-").map(Number), d = new Date(Date.UTC(y, mo - 1 + k, 1));
+  cal.month = `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}`;
+  renderCalendar(cal.m);
+}
+
+function renderCalendar(m) {
+  cal.m = m;
+  const days = (m && m.days) || [];
+  if (!days.length) {
+    $("cal").innerHTML = '<p class="empty" style="grid-column:1/-1">No sessions yet.</p>';
+    $("calMonth").textContent = "–"; $("calSub").textContent = "";
+    $("calPrev").disabled = $("calNext").disabled = true;
+    $("dayTitle").textContent = ""; $("daySum").textContent = ""; $("dayTrades").innerHTML = ""; return;
+  }
+  const byDate = Object.fromEntries(days.map(x => [x.date, x]));
+  const last = days[days.length - 1].date, first = days[0].date;
+  if (cal.acct !== current) {                       // new strategy: jump to its latest day
+    cal.acct = current; cal.month = last.slice(0, 7);
+    cal.sel = [...days].reverse().find(x => x.trades)?.date ?? last;
+  }
+  const [y, mo] = cal.month.split("-").map(Number);
+  $("calMonth").textContent = `${MONTHS[mo - 1]} ${y}`;
+  $("calPrev").disabled = cal.month <= first.slice(0, 7);
+  $("calNext").disabled = cal.month >= last.slice(0, 7);
+
+  const inMonth = days.filter(x => x.date.startsWith(cal.month));
+  const tot = inMonth.reduce((s, x) => s + x.pnl, 0), traded = inMonth.filter(x => x.trades);
+  $("calSub").innerHTML = traded.length
+    ? `Month <span class="${cls(tot)}">${sinr(tot)}</span> · ${traded.filter(x => x.pnl > 0).length} green / ${traded.filter(x => x.pnl <= 0).length} red · ${traded.reduce((s, x) => s + x.trades, 0)} trades`
+    : "No trades this month.";
+  const maxAbs = Math.max(1, ...days.map(x => Math.abs(x.pnl)));
+  const today = new Date(Date.now() + 19800000).toISOString().slice(0, 10);   // IST
+
+  const cells = WD.slice(0, 5).map(w => `<div class="wd">${w}</div>`);
+  const firstDow = (new Date(Date.UTC(y, mo - 1, 1)).getUTCDay() + 6) % 7;      // 0 = Mon
+  const nDays = new Date(Date.UTC(y, mo, 0)).getUTCDate();
+  if (firstDow < 5) for (let i = 0; i < firstDow; i++) cells.push('<div class="cday blank"></div>');
+  for (let dn = 1; dn <= nDays; dn++) {
+    const dow = (new Date(Date.UTC(y, mo - 1, dn)).getUTCDay() + 6) % 7;
+    if (dow > 4) continue;
+    const iso = `${cal.month}-${String(dn).padStart(2, "0")}`, x = byDate[iso];
+    if (!x) {
+      const note = iso > today ? "" : iso < first ? "" : iso === today ? "today" : "no session";
+      cells.push(`<div class="cday off"><span class="dn">${dn}</span><span class="dt">${note}</span></div>`);
+      continue;
+    }
+    const a = x.trades ? Math.round(14 + 46 * Math.abs(x.pnl) / maxAbs) : 0;
+    const bg = x.trades && x.pnl ? `background: color-mix(in srgb, var(${x.pnl > 0 ? "--up" : "--down"}) ${a}%, var(--card));` : "";
+    const title = `${dayLabel(iso)}: ${sinr(x.pnl)} (${x.pct >= 0 ? "+" : ""}${x.pct}%), ${x.trades} trades, ${x.wins} won`;
+    cells.push(`<button class="cday has ${iso === cal.sel ? "sel" : ""}" data-d="${iso}" style="${bg}" title="${esc(title)}" aria-label="${esc(title)}">
+      <span class="dn">${dn}</span>
+      <span class="dp">${x.trades ? kinr(x.pnl) : "–"}</span>
+      <span class="dt">${x.trades ? `${x.trades} trade${x.trades > 1 ? "s" : ""} · ${x.wins} won` : "no trades"}</span></button>`);
+  }
+  $("cal").innerHTML = cells.join("");
+  for (const b of $("cal").querySelectorAll(".cday.has")) b.onclick = () => { cal.sel = b.dataset.d; renderCalendar(cal.m); };
+
+  const x = byDate[cal.sel], tr = (m.trades_by_day || {})[cal.sel] || [];
+  $("dayTitle").textContent = x ? `${dayLabel(cal.sel)} trades` : "";
+  $("daySum").innerHTML = x ? `<span class="${cls(x.pnl)}">${sinr(x.pnl)}</span> · ${x.pct >= 0 ? "+" : ""}${x.pct}% of that morning's equity` : "";
+  if (x) table($("dayTrades"), tradeCols, [...tr].reverse(), "No trades that day.");
+  else $("dayTrades").innerHTML = "";
+}
+
+function renderBreakdown(m) {
+  if (!m || !m.by_exit) { $("breakdown").innerHTML = '<p class="empty">No closed trades yet.</p>'; return; }
+  const EXIT = { TARGET: "Hit target", SL_BE: "Stopped after breakeven", SL: "Stopped out at a loss", SQUARE_OFF: "Squared off at 15:15", SIGNAL: "Exit signal", END_OF_DATA: "End of data" };
+  const groups = [
+    ["How trades ended", Object.entries(m.by_exit).map(([k, v]) => [EXIT[k] ?? k, v])],
+    ["Direction", Object.entries(m.by_direction || {})],
+    ["Entry hour (IST)", Object.entries(m.by_hour || {}).sort()],
+  ];
+  const maxAbs = Math.max(1, ...groups.flatMap(([, rows]) => rows.map(([, v]) => Math.abs(v.net_pnl))));
+  $("breakdown").innerHTML = groups.filter(([, rows]) => rows.length).map(([title, rows]) =>
+    `<div class="bars"><h3>${title}</h3>` + rows.map(([label, v]) => {
+      const w = Math.abs(v.net_pnl) / maxAbs * 50;
+      const pos = v.net_pnl >= 0 ? `left:50%;width:${w}%;background:var(--up)` : `right:50%;width:${w}%;background:var(--down)`;
+      return `<div class="bar"><span class="l">${esc(label)} <span>· ${v.trades} trade${v.trades === 1 ? "" : "s"}, ${v.wins} won</span></span>
+        <span class="r ${cls(v.net_pnl)}">${sinr(v.net_pnl)}</span>
+        <span class="track"><span class="fill" style="${pos}"></span></span></div>`;
+    }).join("") + "</div>").join("");
+}
+
 let fitted = false;
 const posCharts = new Map();
 
@@ -323,8 +485,18 @@ function renderAccounts() {
   for (const b of $("accounts").querySelectorAll(".acct")) b.onclick = () => select(b.dataset.id);
 }
 
-function table(el, cols, rows) {
-  if (!rows.length) { el.innerHTML = '<p class="empty">No trades yet today.</p>'; return; }
+const tradeCols = [
+  { h: "Option", v: t => esc(t.symbol) },
+  { h: "Side", v: t => t.side },
+  { h: "Qty", v: t => t.qty, n: 1 },
+  { h: "Entry", v: t => `${hhmm(t.entry_time)} · ${num(t.entry_price)}`, n: 1 },
+  { h: "Exit", v: t => `${hhmm(t.exit_time)} · ${num(t.exit_price)}`, n: 1 },
+  { h: "Reason", v: t => `<span class="badge">${esc(t.exit_reason)}</span>` },
+  { h: "Net", v: t => sinr(t.net_pnl), cls: t => cls(t.net_pnl), n: 1 },
+];
+
+function table(el, cols, rows, emptyText = "No trades yet today.") {
+  if (!rows.length) { el.innerHTML = `<p class="empty">${emptyText}</p>`; return; }
   el.innerHTML = "<table><thead><tr>" + cols.map(c => `<th class="${c.n ? "n" : ""}">${c.h}</th>`).join("") +
     "</tr></thead><tbody>" + rows.map(r => "<tr>" + cols.map((c, i) =>
       `<td class="${c.n ? "n " : ""}${i === 0 ? "sym " : ""}${c.cls ? c.cls(r) : ""}">${c.v(r)}</td>`).join("") + "</tr>").join("") +
@@ -399,15 +571,7 @@ function render(d) {
       <span class="d">${p.side} ×${p.qty} @ ${num(p.entry_price)} (${hhmm(p.entry_time)}) · LTP ${num(p.ltp)} · SL ${num(p.sl_price)}${p.target_price ? " · TGT " + num(p.target_price) : ""}</span>
     </div>`).join("") : '<p class="empty">Flat: no open positions.</p>';
 
-  table($("trades"), [
-    { h: "Option", v: t => esc(t.symbol) },
-    { h: "Side", v: t => t.side },
-    { h: "Qty", v: t => t.qty, n: 1 },
-    { h: "Entry", v: t => `${hhmm(t.entry_time)} · ${num(t.entry_price)}`, n: 1 },
-    { h: "Exit", v: t => `${hhmm(t.exit_time)} · ${num(t.exit_price)}`, n: 1 },
-    { h: "Reason", v: t => `<span class="badge">${esc(t.exit_reason)}</span>` },
-    { h: "Net", v: t => sinr(t.net_pnl), cls: t => cls(t.net_pnl), n: 1 },
-  ], [...d.trades].reverse());
+  table($("trades"), tradeCols, [...d.trades].reverse());
 
   const showFills = $("showFills").checked;
   $("events").innerHTML = [...d.events].reverse().filter(e => showFills || e.event !== "fill").map(e => {
