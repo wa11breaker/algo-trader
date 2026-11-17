@@ -117,12 +117,29 @@ Fills use candle prices + slippage, not live quotes. <a href="/">&larr; live das
 </main></body></html>"""
 
 
+def start_of_day_equity(acct: Path, day: date) -> float | None:
+    """The paper account's equity when `day` opened: starting capital + trades closed before `day`
+    - withdrawals before `day`. This is what the live bot sized from at the day's first entry
+    (the account's current equity already includes `day`'s P&L and skews the replay's lot sizes)."""
+    st_path = acct / "state.json"
+    if not st_path.exists():
+        return None
+    st = json.loads(st_path.read_text())
+    eq = float(st["initial_capital"])
+    if (acct / "trades.csv").exists():
+        tr = pd.read_csv(acct / "trades.csv")
+        if len(tr):
+            eq += tr.loc[pd.to_datetime(tr.exit_time).dt.date < day, "net_pnl"].sum()
+    eq -= sum(float(w["amount"]) for w in st.get("withdrawals", []) if date.fromisoformat(w["on"]) < day)
+    return round(eq, 2)
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--day", default=str(date.today()))
     ap.add_argument("--expiry", default="auto", help="option expiry, or auto = the nearest on --day")
     ap.add_argument("-s", "--strategy", action="append", help="paper strategy (repeatable; default fvg_flow)")
-    ap.add_argument("--capital", type=float, help="default: the paper account's current equity")
+    ap.add_argument("--capital", type=float, help="default: the paper account's equity when --day opened")
     a = ap.parse_args()
     day = date.fromisoformat(a.day)
     expiry, uni = nearest_expiry(day) if a.expiry == "auto" else (date.fromisoformat(a.expiry), None)
@@ -130,8 +147,7 @@ def main():
         fetch(day, expiry, Path(d), uni)                      # once: Fyers allows 50 requests/min
         for strategy in a.strategy or ["fvg_flow"]:
             acct = ROOT / "paper" / f"{strategy}_NIFTY"
-            live_json = acct / "live.json"
-            capital = a.capital or (json.loads(live_json.read_text()).get("equity", 100_000) if live_json.exists() else 100_000)
+            capital = a.capital or start_of_day_equity(acct, day) or 100_000
             t, skips = replay(day, expiry, strategy, capital, Path(d))
             live = pd.read_csv(acct / "trades.csv") if (acct / "trades.csv").exists() else pd.DataFrame()
             live = live[live.entry_time.str.startswith(str(day))] if len(live) else live
